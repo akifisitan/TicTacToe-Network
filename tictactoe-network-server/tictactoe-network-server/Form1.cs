@@ -143,6 +143,11 @@ namespace tictactoe_network_server
             Environment.Exit(0);
         }
 
+        private void Disconnect()
+        {
+            listening = false;
+        }
+
         private void btnSendMessage_Click(object sender, EventArgs e)
         {
             string message = txtBoxMessage.Text;
@@ -169,5 +174,6 @@ namespace tictactoe_network_server
                 }
             }
         }
+
     }
 }

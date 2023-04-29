@@ -55,6 +55,7 @@
             this.labelPort.Size = new System.Drawing.Size(57, 26);
             this.labelPort.TabIndex = 1;
             this.labelPort.Text = "Port:";
+            this.labelPort.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // txtBoxPort
             // 
@@ -66,11 +67,14 @@
             // 
             // logs
             // 
-            this.logs.Location = new System.Drawing.Point(398, 43);
+            this.logs.HideSelection = false;
+            this.logs.ImeMode = System.Windows.Forms.ImeMode.Off;
+            this.logs.Location = new System.Drawing.Point(23, 144);
             this.logs.Name = "logs";
             this.logs.ReadOnly = true;
-            this.logs.Size = new System.Drawing.Size(364, 534);
+            this.logs.Size = new System.Drawing.Size(211, 342);
             this.logs.TabIndex = 3;
+            this.logs.TabStop = false;
             this.logs.Text = "";
             // 
             // txtBoxMessage
@@ -88,6 +92,7 @@
             this.label1.Size = new System.Drawing.Size(76, 26);
             this.label1.TabIndex = 5;
             this.label1.Text = "Message";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // btnSendMessage
             // 

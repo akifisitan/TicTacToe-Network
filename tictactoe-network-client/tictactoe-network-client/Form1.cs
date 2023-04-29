@@ -29,18 +29,26 @@ namespace tictactoe_network_client
 
         private void button_connect_Click(object sender, EventArgs e)
         {
-            clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            string ip = textBox_ip.Text;
+            btnConnect.Enabled = false;
+            if (btnConnect.Text == "Disconnect")
+            {
+                clientSocket.Close();
+                connected = false;
+                btnConnect.Text = "Connect";
+                btnConnect.Enabled = true;
+                return;
+            }
             
-            if (Int32.TryParse(textBox_port.Text, out var portNum))
+            clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            string ip = txtBoxIp.Text;
+            
+            if (Int32.TryParse(txtBoxPort.Text, out var portNum))
             {
                 try
                 {
                     clientSocket.Connect(ip, portNum); 
-                    username = textBox_username.Text;
+                    username = txtBoxUsername.Text;
                     clientSocket.Send(Encoding.Default.GetBytes(username));
-
-                    button_connect.Enabled = false;
                     
                     Byte[] buffer = new Byte[64];
                     clientSocket.Receive(buffer);
@@ -50,12 +58,14 @@ namespace tictactoe_network_client
                     if (serverResponse.Equals("There is already a player with this username!"))
                     {
                         logs.AppendText("There is already a player with this username!");
-                        button_connect.Enabled = true;
+                        btnConnect.Enabled = true;
                     }
                     else
                     {
-                        textBox_message.Enabled = true;
-                        button_send.Enabled = true;
+                        txtBoxMessage.Enabled = true;
+                        btnConnect.Text = "Disconnect";
+                        btnConnect.Enabled = true;
+                        btnSend.Enabled = true;
                         connected = true;
                         logs.AppendText($"Connected to the server as {username}\n");
 
@@ -72,12 +82,12 @@ namespace tictactoe_network_client
             {
                 logs.AppendText("Check the port\n");
             }
-
+            btnConnect.Enabled = true;
         }
 
         private void Receive()
         {
-            while(connected)
+            while (connected)
             {
                 try
                 {
@@ -93,10 +103,10 @@ namespace tictactoe_network_client
                 {
                     if (!terminating)
                     {
-                        logs.AppendText("The server has disconnected\n");
-                        button_connect.Enabled = true;
-                        textBox_message.Enabled = false;
-                        button_send.Enabled = false;
+                        logs.AppendText("Disconnected from the server\n");
+                        btnConnect.Enabled = true;
+                        txtBoxMessage.Enabled = false;
+                        btnSend.Enabled = false;
                     }
 
                     clientSocket.Close();
@@ -104,6 +114,13 @@ namespace tictactoe_network_client
                 }
 
             }
+        }
+
+        private void Disconnect()
+        {
+            clientSocket.Close();
+            connected = false;
+            btnConnect.Text = "Connect";
         }
 
         private void Form1_FormClosing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -115,7 +132,7 @@ namespace tictactoe_network_client
 
         private void button_send_Click(object sender, EventArgs e)
         {
-            string message = textBox_message.Text;
+            string message = txtBoxMessage.Text;
             logs.AppendText($"{username}: {message}\n");
 
             if (message != "" && message.Length <= 64)
