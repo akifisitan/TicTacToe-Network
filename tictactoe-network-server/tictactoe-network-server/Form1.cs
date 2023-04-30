@@ -32,8 +32,8 @@ namespace tictactoe_network_server
 
         private void btnStart_Click(object sender, EventArgs e)
         {
-            
-            if (Int32.TryParse(txtBoxPort.Text, out var serverPort))
+            int serverPort;
+            if (Int32.TryParse(txtBoxPort.Text, out serverPort))
             {
                 IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, serverPort);
                 serverSocket.Bind(endPoint);

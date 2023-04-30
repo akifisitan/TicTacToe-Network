@@ -41,8 +41,9 @@ namespace tictactoe_network_client
             
             clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             string ip = txtBoxIp.Text;
+            int portNum;
             
-            if (Int32.TryParse(txtBoxPort.Text, out var portNum))
+            if (Int32.TryParse(txtBoxPort.Text, out portNum))
             {
                 try
                 {
