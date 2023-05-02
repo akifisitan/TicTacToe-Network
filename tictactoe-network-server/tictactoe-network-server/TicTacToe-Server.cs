@@ -122,6 +122,7 @@ namespace tictactoe_network_server
                     notifyGamePlayers($"BOARD_ADD_{playerChoice}_{user.Shape}");
                     if (checkWinner()) {
                         logs.AppendText($"{user.Username} won!\n");
+                        label1.Text = $"{user.Shape} wins!";
                         notifyGamePlayers($"GAME_END_{user.Username}");
                         user.InGame = false;
                         continue;
@@ -129,6 +130,7 @@ namespace tictactoe_network_server
                     if (!checkBoardRemaining())
                     {
                         logs.AppendText("It is a draw!\n");
+                        label1.Text = "DRAW";
                         notifyGamePlayers("GAME_END_DRAW");
                         user.InGame = false;
                         continue;
@@ -139,7 +141,8 @@ namespace tictactoe_network_server
                     nextPlayer.HasTurn = true;
                     notifyGamePlayers($"{nextPlayer.Username}'s turn.");
                     logs.AppendText($"{nextPlayer.Username}'s turn.\n");
-                    logs.AppendText($"{user.Username}: {incomingMessage}\n");
+                    logs.AppendText($"{user.Username}({user.Shape}): {incomingMessage} \n");
+                    label1.Text = $"{nextPlayer.Shape}'s turn.";
                 }
                 catch (Exception e)
                 {
@@ -180,37 +183,37 @@ namespace tictactoe_network_server
 
         private bool checkWinner() {
             // Rows
-            if (board1.Text == board2.Text && board2.Text == board3.Text && board1.Text != "-")
+            if (board1.Text == board2.Text && board2.Text == board3.Text && board1.Text != "1")
             {
                 return true;
             }
-            if (board4.Text == board5.Text && board5.Text == board6.Text && board4.Text != "-")
+            if (board4.Text == board5.Text && board5.Text == board6.Text && board4.Text != "4")
             {
                 return true;
             }
-            if (board7.Text == board8.Text && board8.Text == board9.Text && board7.Text != "-")
+            if (board7.Text == board8.Text && board8.Text == board9.Text && board7.Text != "7")
             {
                 return true;
             }
             // Columns
-            if (board1.Text == board4.Text && board4.Text == board7.Text && board1.Text != "-")
+            if (board1.Text == board4.Text && board4.Text == board7.Text && board1.Text != "1")
             {
                 return true;
             }
-            if (board2.Text == board5.Text && board5.Text == board8.Text && board2.Text != "-")
+            if (board2.Text == board5.Text && board5.Text == board8.Text && board2.Text != "2")
             {
                 return true;
             }
-            if (board3.Text == board6.Text && board6.Text == board9.Text && board3.Text != "-")
+            if (board3.Text == board6.Text && board6.Text == board9.Text && board3.Text != "3")
             {
                 return true;
             }
             // Diagonals
-            if (board1.Text == board5.Text && board5.Text == board9.Text && board1.Text != "-")
+            if (board1.Text == board5.Text && board5.Text == board9.Text && board1.Text != "1")
             {
                 return true;
             }
-            if (board3.Text == board5.Text && board5.Text == board7.Text && board3.Text != "-")
+            if (board3.Text == board5.Text && board5.Text == board7.Text && board3.Text != "3")
             {
                 return true;
             }
@@ -219,16 +222,16 @@ namespace tictactoe_network_server
         }
 
         private bool checkBoardRemaining() {
-            return board1.Text == "-" || board2.Text == "-" || board3.Text == "-" ||
-                   board4.Text == "-" || board5.Text == "-" || board6.Text == "-" ||
-                   board7.Text == "-" || board8.Text == "-" || board9.Text == "-";
+            return board1.Text == "1" || board2.Text == "2" || board3.Text == "3" ||
+                   board4.Text == "4" || board5.Text == "5" || board6.Text == "6" ||
+                   board7.Text == "7" || board8.Text == "8" || board9.Text == "9";
         }
 
         private void resetGameBoard()
         {
-            board1.Text = "-"; board2.Text = "-"; board3.Text = "-";
-            board4.Text = "-"; board5.Text = "-"; board6.Text = "-";
-            board7.Text = "-"; board8.Text = "-"; board9.Text = "-";
+            board1.Text = "1"; board2.Text = "2"; board3.Text = "3";
+            board4.Text = "4"; board5.Text = "5"; board6.Text = "6";
+            board7.Text = "7"; board8.Text = "8"; board9.Text = "9";
         }
 
         

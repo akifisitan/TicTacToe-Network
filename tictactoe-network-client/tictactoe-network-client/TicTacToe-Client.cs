@@ -95,6 +95,7 @@ namespace tictactoe_network_client
                     if (!inGame && message.Equals("GAME_START")) {
                         inGame = true;
                         gameBoard.Invoke(new Action(() => gameBoard.Visible = true));
+                        ClearBoard();
                         logs.AppendText("The game has started!\n");
                         continue;
                     }
@@ -148,7 +149,7 @@ namespace tictactoe_network_client
         private void ClearBoard() {
             for (int i = 1; i <= 9; i++) {
                 Label board = Controls.Find($"board{i}", true).FirstOrDefault() as Label;
-                board.Text = "-";
+                board.Text = i.ToString();
             }
         }
 
