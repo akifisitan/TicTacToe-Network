@@ -123,12 +123,14 @@ namespace tictactoe_network_server
                     if (checkWinner()) {
                         logs.AppendText($"{user.Username} won!\n");
                         notifyGamePlayers($"GAME_END_{user.Username}");
+                        user.InGame = false;
                         continue;
                     }
                     if (!checkBoardRemaining())
                     {
                         logs.AppendText("It is a draw!\n");
                         notifyGamePlayers("GAME_END_DRAW");
+                        user.InGame = false;
                         continue;
                     }
                     // Set the other player's turn

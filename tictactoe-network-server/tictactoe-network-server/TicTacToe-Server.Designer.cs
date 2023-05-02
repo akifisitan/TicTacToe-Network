@@ -84,14 +84,14 @@
             this.logs.Location = new System.Drawing.Point(23, 144);
             this.logs.Name = "logs";
             this.logs.ReadOnly = true;
-            this.logs.Size = new System.Drawing.Size(211, 216);
+            this.logs.Size = new System.Drawing.Size(364, 226);
             this.logs.TabIndex = 3;
             this.logs.TabStop = false;
             this.logs.Text = "";
             // 
             // txtBoxPlayers
             // 
-            this.txtBoxPlayers.Location = new System.Drawing.Point(240, 144);
+            this.txtBoxPlayers.Location = new System.Drawing.Point(636, 143);
             this.txtBoxPlayers.Name = "txtBoxPlayers";
             this.txtBoxPlayers.ReadOnly = true;
             this.txtBoxPlayers.Size = new System.Drawing.Size(132, 165);
@@ -101,7 +101,7 @@
             // 
             // label2
             // 
-            this.label2.Location = new System.Drawing.Point(241, 105);
+            this.label2.Location = new System.Drawing.Point(637, 105);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(100, 26);
             this.label2.TabIndex = 8;
@@ -120,7 +120,7 @@
             // btnStartGame
             // 
             this.btnStartGame.Enabled = false;
-            this.btnStartGame.Location = new System.Drawing.Point(241, 315);
+            this.btnStartGame.Location = new System.Drawing.Point(637, 314);
             this.btnStartGame.Name = "btnStartGame";
             this.btnStartGame.Size = new System.Drawing.Size(131, 55);
             this.btnStartGame.TabIndex = 10;
@@ -229,7 +229,7 @@
             this.gameBoard.Controls.Add(this.board7);
             this.gameBoard.Controls.Add(this.board9);
             this.gameBoard.Controls.Add(this.board8);
-            this.gameBoard.Location = new System.Drawing.Point(427, 105);
+            this.gameBoard.Location = new System.Drawing.Point(393, 115);
             this.gameBoard.Name = "gameBoard";
             this.gameBoard.Size = new System.Drawing.Size(237, 255);
             this.gameBoard.TabIndex = 29;
@@ -242,7 +242,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(715, 401);
+            this.ClientSize = new System.Drawing.Size(784, 444);
             this.Controls.Add(this.gameBoard);
             this.Controls.Add(this.btnStartGame);
             this.Controls.Add(this.label3);
@@ -254,6 +254,7 @@
             this.Controls.Add(this.btnListen);
             this.Location = new System.Drawing.Point(15, 15);
             this.Name = "MainWindow";
+            this.Text = "TicTacToe Server";
             this.gameBoard.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();

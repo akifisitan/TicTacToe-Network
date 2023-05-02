@@ -1,6 +1,6 @@
 ﻿namespace tictactoe_network_client
 {
-    partial class Form1
+    partial class MainWindow
     {
         /// <summary>
         /// Required designer variable.
@@ -34,7 +34,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.btnConnect = new System.Windows.Forms.Button();
-            this.txtBoxMessage = new System.Windows.Forms.TextBox();
+            this.txtBoxChoice = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.btnSend = new System.Windows.Forms.Button();
             this.logs = new System.Windows.Forms.RichTextBox();
@@ -50,7 +50,9 @@
             this.board5 = new System.Windows.Forms.Label();
             this.board4 = new System.Windows.Forms.Label();
             this.gameBoard = new System.Windows.Forms.GroupBox();
+            this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.gameBoard.SuspendLayout();
+            this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
             // txtBoxIp
@@ -64,7 +66,7 @@
             // 
             // txtBoxPort
             // 
-            this.txtBoxPort.Location = new System.Drawing.Point(108, 54);
+            this.txtBoxPort.Location = new System.Drawing.Point(108, 57);
             this.txtBoxPort.Margin = new System.Windows.Forms.Padding(2);
             this.txtBoxPort.Name = "txtBoxPort";
             this.txtBoxPort.Size = new System.Drawing.Size(130, 26);
@@ -74,7 +76,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(11, 24);
+            this.label1.Location = new System.Drawing.Point(11, 27);
             this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(28, 20);
@@ -85,7 +87,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(11, 57);
+            this.label2.Location = new System.Drawing.Point(11, 63);
             this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(42, 20);
@@ -95,7 +97,7 @@
             // 
             // btnConnect
             // 
-            this.btnConnect.Location = new System.Drawing.Point(134, 116);
+            this.btnConnect.Location = new System.Drawing.Point(134, 136);
             this.btnConnect.Margin = new System.Windows.Forms.Padding(2);
             this.btnConnect.Name = "btnConnect";
             this.btnConnect.Size = new System.Drawing.Size(104, 34);
@@ -105,14 +107,14 @@
             this.btnConnect.UseVisualStyleBackColor = true;
             this.btnConnect.Click += new System.EventHandler(this.button_connect_Click);
             // 
-            // txtBoxMessage
+            // txtBoxChoice
             // 
-            this.txtBoxMessage.Enabled = false;
-            this.txtBoxMessage.Location = new System.Drawing.Point(84, 188);
-            this.txtBoxMessage.Margin = new System.Windows.Forms.Padding(2);
-            this.txtBoxMessage.Name = "txtBoxMessage";
-            this.txtBoxMessage.Size = new System.Drawing.Size(123, 26);
-            this.txtBoxMessage.TabIndex = 7;
+            this.txtBoxChoice.Enabled = false;
+            this.txtBoxChoice.Location = new System.Drawing.Point(64, 188);
+            this.txtBoxChoice.Margin = new System.Windows.Forms.Padding(2);
+            this.txtBoxChoice.Name = "txtBoxChoice";
+            this.txtBoxChoice.Size = new System.Drawing.Size(143, 26);
+            this.txtBoxChoice.TabIndex = 7;
             // 
             // label3
             // 
@@ -120,9 +122,10 @@
             this.label3.Location = new System.Drawing.Point(9, 188);
             this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(62, 20);
+            this.label3.Size = new System.Drawing.Size(51, 20);
             this.label3.TabIndex = 9;
-            this.label3.Text = "Choice:";
+            this.label3.Text = "Move:";
+            this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // btnSend
             // 
@@ -142,18 +145,18 @@
             // 
             this.logs.HideSelection = false;
             this.logs.ImeMode = System.Windows.Forms.ImeMode.Off;
-            this.logs.Location = new System.Drawing.Point(11, 163);
+            this.logs.Location = new System.Drawing.Point(10, 23);
             this.logs.Margin = new System.Windows.Forms.Padding(2);
             this.logs.Name = "logs";
             this.logs.ReadOnly = true;
-            this.logs.Size = new System.Drawing.Size(329, 243);
+            this.logs.Size = new System.Drawing.Size(329, 253);
             this.logs.TabIndex = 11;
             this.logs.TabStop = false;
             this.logs.Text = "";
             // 
             // label4
             // 
-            this.label4.Location = new System.Drawing.Point(11, 88);
+            this.label4.Location = new System.Drawing.Point(11, 99);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(96, 23);
             this.label4.TabIndex = 12;
@@ -162,7 +165,7 @@
             // 
             // txtBoxUsername
             // 
-            this.txtBoxUsername.Location = new System.Drawing.Point(108, 85);
+            this.txtBoxUsername.Location = new System.Drawing.Point(108, 96);
             this.txtBoxUsername.Name = "txtBoxUsername";
             this.txtBoxUsername.Size = new System.Drawing.Size(130, 26);
             this.txtBoxUsername.TabIndex = 5;
@@ -261,7 +264,7 @@
             // gameBoard
             // 
             this.gameBoard.Controls.Add(this.btnSend);
-            this.gameBoard.Controls.Add(this.txtBoxMessage);
+            this.gameBoard.Controls.Add(this.txtBoxChoice);
             this.gameBoard.Controls.Add(this.board9);
             this.gameBoard.Controls.Add(this.board3);
             this.gameBoard.Controls.Add(this.label3);
@@ -272,7 +275,7 @@
             this.gameBoard.Controls.Add(this.board6);
             this.gameBoard.Controls.Add(this.board8);
             this.gameBoard.Controls.Add(this.board7);
-            this.gameBoard.Location = new System.Drawing.Point(532, 136);
+            this.gameBoard.Location = new System.Drawing.Point(385, 182);
             this.gameBoard.Name = "gameBoard";
             this.gameBoard.Size = new System.Drawing.Size(220, 270);
             this.gameBoard.TabIndex = 38;
@@ -280,28 +283,42 @@
             this.gameBoard.Text = "Game Board";
             this.gameBoard.Visible = false;
             // 
-            // Form1
+            // groupBox1
+            // 
+            this.groupBox1.Controls.Add(this.logs);
+            this.groupBox1.Location = new System.Drawing.Point(11, 182);
+            this.groupBox1.Name = "groupBox1";
+            this.groupBox1.Size = new System.Drawing.Size(352, 270);
+            this.groupBox1.TabIndex = 39;
+            this.groupBox1.TabStop = false;
+            this.groupBox1.Text = "Game Logs";
+            // 
+            // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(636, 477);
+            this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.gameBoard);
             this.Controls.Add(this.txtBoxUsername);
             this.Controls.Add(this.label4);
-            this.Controls.Add(this.logs);
             this.Controls.Add(this.btnConnect);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.txtBoxPort);
             this.Controls.Add(this.txtBoxIp);
             this.Location = new System.Drawing.Point(15, 15);
-            this.Name = "Form1";
+            this.Name = "MainWindow";
+            this.Text = "TicTacToe Client";
             this.gameBoard.ResumeLayout(false);
             this.gameBoard.PerformLayout();
+            this.groupBox1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
         }
+
+        private System.Windows.Forms.GroupBox groupBox1;
 
         private System.Windows.Forms.GroupBox gameBoard;
 
@@ -323,7 +340,7 @@
 
         private System.Windows.Forms.Label label3;
 
-        private System.Windows.Forms.TextBox txtBoxMessage;
+        private System.Windows.Forms.TextBox txtBoxChoice;
 
         private System.Windows.Forms.Button btnConnect;
 

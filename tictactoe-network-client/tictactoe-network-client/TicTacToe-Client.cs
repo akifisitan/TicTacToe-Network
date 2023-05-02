@@ -12,7 +12,7 @@ using System.Windows.Forms;
 
 namespace tictactoe_network_client
 {
-    public partial class Form1 : Form
+    public partial class MainWindow : Form
     {
 
         bool terminating = false;
@@ -21,10 +21,10 @@ namespace tictactoe_network_client
         Socket clientSocket;
         private string username = "";
 
-        public Form1()
+        public MainWindow()
         {
             Control.CheckForIllegalCrossThreadCalls = false;
-            this.FormClosing += new FormClosingEventHandler(Form1_FormClosing);
+            this.FormClosing += new FormClosingEventHandler(MainWindow_FormClosing);
             InitializeComponent();
         }
 
@@ -61,7 +61,7 @@ namespace tictactoe_network_client
                         logs.AppendText("There is already a player with this username!\n");
                         btnConnect.Enabled = true;
                     } else {
-                        txtBoxMessage.Enabled = true;
+                        txtBoxChoice.Enabled = true;
                         btnConnect.Text = "Disconnect";
                         btnConnect.Enabled = true;
                         btnSend.Enabled = true;
@@ -99,21 +99,28 @@ namespace tictactoe_network_client
                         continue;
                     }
 
-                    if (message.StartsWith("BOARD_ADD")) // BOARD_ADD_X_1
+                    if (inGame)
                     {
-                        string[] splitMessage = message.Split('_');
-                        SetBoardText(int.Parse(splitMessage[2]), splitMessage[3]);
+                        if (message.StartsWith("BOARD_ADD")) // BOARD_ADD_X_1
+                        {
+                            string[] splitMessage = message.Split('_');
+                            SetBoardText(int.Parse(splitMessage[2]), splitMessage[3]);
+                            continue;
+                        }
+
+                        if (message.StartsWith("GAME_END")) // GAME_END_DRAW
+                        {
+                            string[] splitMessage = message.Split(new char[] { '_' }, 3);
+                            string result = "DRAW" == splitMessage[2]
+                                ? "Game ended in a draw"
+                                : $"{splitMessage[2]} won!";
+                            logs.AppendText($"{result}\n");
+                            inGame = false;
+                            continue;
+                        }
                     }
-                    if (message.StartsWith("GAME_END")) // GAME_END_DRAW
-                    {
-                        string[] splitMessage = message.Split(new char[] { '_' }, 3);
-                        string result = "DRAW" == splitMessage[2] ? "Game ended in a draw" 
-                            : $"{splitMessage[2]} won!";
-                        logs.AppendText($"{result}\n");
-                        inGame = false;
-                        continue;
-                    }
-                    // logs.AppendText($"Server: {message}\n");
+
+                    logs.AppendText($"Server: {message}\n");
                 }
                 catch {
                     if (!terminating)
@@ -121,7 +128,7 @@ namespace tictactoe_network_client
                         logs.AppendText("Disconnected from the server\n");
                         gameBoard.Invoke(new Action(() => gameBoard.Visible = false));
                         btnConnect.Enabled = true;
-                        txtBoxMessage.Enabled = false;
+                        txtBoxChoice.Enabled = false;
                         btnSend.Enabled = false;
                     }
 
@@ -131,21 +138,18 @@ namespace tictactoe_network_client
 
             }
         }
-        private bool SetBoardText(int boardNumber, string shape)
-        {
+        private void SetBoardText(int boardNumber, string shape) {
             Label board = Controls.Find($"board{boardNumber}", true).FirstOrDefault() as Label;
-            if (board == null) {
-                // Board with specified number not found
-                return false;
+            if (board != null) {
+                board.Text = shape;
             }
-            // Board is already occupied
-            if (board.Text == "O" || board.Text == "X") {
-                return false;
-            }                
-            // Board is empty
-            board.Text = shape;
-            return true;
-            
+        }
+
+        private void ClearBoard() {
+            for (int i = 1; i <= 9; i++) {
+                Label board = Controls.Find($"board{i}", true).FirstOrDefault() as Label;
+                board.Text = "-";
+            }
         }
 
         private void Disconnect()
@@ -155,7 +159,7 @@ namespace tictactoe_network_client
             btnConnect.Text = "Connect";
         }
 
-        private void Form1_FormClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void MainWindow_FormClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             connected = false;
             terminating = true;
@@ -164,7 +168,7 @@ namespace tictactoe_network_client
 
         private void button_send_Click(object sender, EventArgs e)
         {
-            string message = txtBoxMessage.Text;
+            string message = txtBoxChoice.Text;
             if (message != "" && message.Length <= 64)
             {
                 logs.AppendText($"{username}: {message}\n");
