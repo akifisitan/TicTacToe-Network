@@ -6,7 +6,11 @@ namespace tictactoe_network_server
     {
         public string Username { get; set; }
         public Socket Socket { get; set; }
-        public int Points { get; set; }
+        public int Wins { get; set; }
+        public int Losses { get; set; }
+
+        public int Draws { get; set; }
+
         public bool HasTurn { get; set; }
         public bool InGame { get; set; }
         public string Shape { get; set; }
@@ -15,7 +19,9 @@ namespace tictactoe_network_server
         {
             Username = username;
             Socket = socket;
-            Points = 0;
+            Wins = 0;
+            Losses = 0;
+            Draws = 0;
             InGame = false;
             HasTurn = false;
             Shape = "-";

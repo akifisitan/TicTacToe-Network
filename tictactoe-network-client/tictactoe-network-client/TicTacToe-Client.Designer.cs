@@ -36,7 +36,6 @@
             this.btnConnect = new System.Windows.Forms.Button();
             this.txtBoxChoice = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.btnSend = new System.Windows.Forms.Button();
             this.logs = new System.Windows.Forms.RichTextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.txtBoxUsername = new System.Windows.Forms.TextBox();
@@ -50,6 +49,7 @@
             this.board5 = new System.Windows.Forms.Label();
             this.board4 = new System.Windows.Forms.Label();
             this.gameBoard = new System.Windows.Forms.GroupBox();
+            this.btnPlay = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.gameBoard.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -62,7 +62,6 @@
             this.txtBoxIp.Name = "txtBoxIp";
             this.txtBoxIp.Size = new System.Drawing.Size(130, 26);
             this.txtBoxIp.TabIndex = 3;
-            this.txtBoxIp.Text = "127.0.0.1";
             // 
             // txtBoxPort
             // 
@@ -71,7 +70,6 @@
             this.txtBoxPort.Name = "txtBoxPort";
             this.txtBoxPort.Size = new System.Drawing.Size(130, 26);
             this.txtBoxPort.TabIndex = 4;
-            this.txtBoxPort.Text = "80";
             // 
             // label1
             // 
@@ -127,20 +125,6 @@
             this.label3.Text = "Move:";
             this.label3.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // btnSend
-            // 
-            this.btnSend.Enabled = false;
-            this.btnSend.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnSend.Location = new System.Drawing.Point(110, 246);
-            this.btnSend.Margin = new System.Windows.Forms.Padding(2);
-            this.btnSend.Name = "btnSend";
-            this.btnSend.Size = new System.Drawing.Size(98, 42);
-            this.btnSend.TabIndex = 8;
-            this.btnSend.TabStop = false;
-            this.btnSend.Text = "Play";
-            this.btnSend.UseVisualStyleBackColor = true;
-            this.btnSend.Click += new System.EventHandler(this.btnSend_Click);
-            // 
             // logs
             // 
             this.logs.HideSelection = false;
@@ -170,7 +154,6 @@
             this.txtBoxUsername.Name = "txtBoxUsername";
             this.txtBoxUsername.Size = new System.Drawing.Size(130, 26);
             this.txtBoxUsername.TabIndex = 5;
-            this.txtBoxUsername.Text = "Michael Jordan";
             // 
             // board3
             // 
@@ -264,7 +247,7 @@
             // 
             // gameBoard
             // 
-            this.gameBoard.Controls.Add(this.btnSend);
+            this.gameBoard.Controls.Add(this.btnPlay);
             this.gameBoard.Controls.Add(this.txtBoxChoice);
             this.gameBoard.Controls.Add(this.board9);
             this.gameBoard.Controls.Add(this.board3);
@@ -285,6 +268,20 @@
             this.gameBoard.TabStop = false;
             this.gameBoard.Text = "Game Board";
             this.gameBoard.Visible = false;
+            // 
+            // btnPlay
+            // 
+            this.btnPlay.Enabled = false;
+            this.btnPlay.Font = new System.Drawing.Font("Microsoft Sans Serif", 8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnPlay.Location = new System.Drawing.Point(110, 246);
+            this.btnPlay.Margin = new System.Windows.Forms.Padding(2);
+            this.btnPlay.Name = "btnPlay";
+            this.btnPlay.Size = new System.Drawing.Size(98, 42);
+            this.btnPlay.TabIndex = 8;
+            this.btnPlay.TabStop = false;
+            this.btnPlay.Text = "Play";
+            this.btnPlay.UseVisualStyleBackColor = true;
+            this.btnPlay.Click += new System.EventHandler(this.btnPlay_Click);
             // 
             // groupBox1
             // 
@@ -342,7 +339,7 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.TextBox txtBoxUsername;
 
-        private System.Windows.Forms.Button btnSend;
+        private System.Windows.Forms.Button btnPlay;
 
         private System.Windows.Forms.Label label3;
 

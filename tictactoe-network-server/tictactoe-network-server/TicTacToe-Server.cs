@@ -28,7 +28,14 @@ namespace tictactoe_network_server
             this.FormClosing += new FormClosingEventHandler(MainWindow_FormClosing);
             InitializeComponent();
         }
-
+        
+        private void MainWindow_FormClosing(object sender, System.ComponentModel.CancelEventArgs e) {
+            listening = false;
+            terminating = true;
+            Environment.Exit(0);
+        }
+        
+        // Start button logic
         private void btnStart_Click(object sender, EventArgs e) {
             int serverPort;
             if (Int32.TryParse(txtBoxPort.Text, out serverPort)) {
@@ -45,6 +52,7 @@ namespace tictactoe_network_server
                 logs.AppendText("Please check the port number \n");
             }
         }
+        
         // Accept incoming connections
         private void Accept() {
             while (listening) {
@@ -113,9 +121,9 @@ namespace tictactoe_network_server
                         continue;
                     }
                     int playerChoice;
-                    if (!(Int32.TryParse($"{incomingMessage[0]}", out playerChoice) && 0 <= playerChoice &&
+                    if (!(Int32.TryParse($"{incomingMessage}", out playerChoice) && 0 <= playerChoice &&
                           playerChoice <= 9)) {
-                        SendMessage(user, "Please enter a number between 1 and 9.");
+                        SendMessage(user, "Please enter a number. (1-9)");
                         continue;
                     }
                     if (!SetBoardText(playerChoice, user.Shape)) {
@@ -125,23 +133,30 @@ namespace tictactoe_network_server
                     // Non-illegal play
                     logs.AppendText($"{user.Username}'s ({user.Shape}) play: {incomingMessage}\n");
                     NotifyGamePlayers($"BOARD_ADD_{playerChoice}_{user.Shape}");
-                    if (CheckWinner()) {
+                    User nextPlayer = user.Username != gamePlayers[0].Username ? gamePlayers[0] : gamePlayers[1];
+                    if (CheckIfWinner()) {
                         logs.AppendText($"{user.Username} wins!\n");
                         txtTurn.Text = $"{user.Shape} wins!";
+                        // Increment wins and losses respectively
+                        connectedClients[user.Username].Wins++;
+                        connectedClients[nextPlayer.Username].Losses++;
                         NotifyGamePlayers($"GAME_END_{user.Username}");
                         user.InGame = false;
+                        btnStartGame.Text = "Start Game";
                         continue;
                     }
-                    if (!CheckBoardRemaining()) {
+                    if (BoardIsFull()) {
                         logs.AppendText("It is a draw!\n");
-                        txtTurn.Text = "DRAW";
+                        txtTurn.Text = "Draw!";
+                        connectedClients[user.Username].Draws++;
+                        connectedClients[nextPlayer.Username].Draws++;
                         NotifyGamePlayers("GAME_END_DRAW");
                         user.InGame = false;
+                        btnStartGame.Text = "Start Game";
                         continue;
                     }
                     // Set the other player's turn
                     user.HasTurn = false;
-                    User nextPlayer = user.Username != gamePlayers[0].Username ? gamePlayers[0] : gamePlayers[1];
                     nextPlayer.HasTurn = true;
                     NotifyGamePlayers($"{nextPlayer.Username}'s ({nextPlayer.Shape}) turn.");
                     logs.AppendText($"{nextPlayer.Username}'s ({nextPlayer.Shape}) turn.\n");
@@ -159,12 +174,6 @@ namespace tictactoe_network_server
             }
         }
         
-        private void MainWindow_FormClosing(object sender, System.ComponentModel.CancelEventArgs e) {
-            listening = false;
-            terminating = true;
-            Environment.Exit(0);
-        }
-
         private bool SetBoardText(int boardNumber, string shape) {
             Label board = Controls.Find($"board{boardNumber}", true).FirstOrDefault() as Label;
             if (board == null) {
@@ -180,7 +189,7 @@ namespace tictactoe_network_server
             return true;
         }
 
-        private bool CheckWinner() {
+        private bool CheckIfWinner() {
             // Rows
             if (board1.Text == board2.Text && board2.Text == board3.Text && board1.Text != "1")
             {
@@ -220,10 +229,12 @@ namespace tictactoe_network_server
             return false;
         }
 
-        private bool CheckBoardRemaining() {
-            return board1.Text == "1" || board2.Text == "2" || board3.Text == "3" ||
-                   board4.Text == "4" || board5.Text == "5" || board6.Text == "6" ||
-                   board7.Text == "7" || board8.Text == "8" || board9.Text == "9";
+        private bool BoardIsFull() {
+            return board1.Text != "1" && board2.Text != "2" && board3.Text != "3" 
+                   &&
+                   board4.Text != "4" && board5.Text != "5" && board6.Text != "6" 
+                   &&
+                   board7.Text != "7" && board8.Text != "8" && board9.Text != "9";
         }
 
         private void ResetGameBoard() {
@@ -268,8 +279,8 @@ namespace tictactoe_network_server
             if (btnStartGame.Text == "Reset Game") {
                 NotifyGamePlayers("GAME_RESET");
                 gamePlayers.Clear();
-                gameBoard.Visible = false;
                 ResetGameBoard();
+                gameBoard.Visible = false;
                 btnStartGame.Text = "Start Game";
                 logs.AppendText("Game has been reset.\n");
                 return;
@@ -278,12 +289,15 @@ namespace tictactoe_network_server
                 logs.AppendText("There are not enough players to start the game!\n");
                 return;
             }
+            gamePlayers.Clear();
+            ResetGameBoard();
             // Remember to only add 2 people
             foreach (User user in connectedClients.Values) {
                 gamePlayers.Add(user);
             }
             User player1 = gamePlayers[0];
             User player2 = gamePlayers[1];
+            // Possibly randomize this for the future
             player1.InGame = true; player1.Shape = "X";
             player2.InGame = true; player2.Shape = "O";
             player1.HasTurn = true;
