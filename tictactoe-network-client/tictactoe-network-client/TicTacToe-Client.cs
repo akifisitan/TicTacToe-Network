@@ -12,8 +12,7 @@ using System.Windows.Forms;
 
 namespace tictactoe_network_client
 {
-    public partial class MainWindow : Form
-    {
+    public partial class MainWindow : Form {
 
         bool terminating = false;
         bool connected = false; 
@@ -21,18 +20,15 @@ namespace tictactoe_network_client
         Socket clientSocket;
         private string username = "";
 
-        public MainWindow()
-        {
+        public MainWindow() {
             Control.CheckForIllegalCrossThreadCalls = false;
             this.FormClosing += new FormClosingEventHandler(MainWindow_FormClosing);
             InitializeComponent();
         }
 
-        private void button_connect_Click(object sender, EventArgs e)
-        {
+        private void button_connect_Click(object sender, EventArgs e) {
             btnConnect.Enabled = false;
-            if (btnConnect.Text == "Disconnect")
-            {
+            if (btnConnect.Text == "Disconnect") {
                 clientSocket.Close();
                 connected = false;
                 btnConnect.Text = "Connect";
@@ -44,10 +40,8 @@ namespace tictactoe_network_client
             string ip = txtBoxIp.Text;
             int portNum;
             
-            if (Int32.TryParse(txtBoxPort.Text, out portNum))
-            {
-                try
-                {
+            if (Int32.TryParse(txtBoxPort.Text, out portNum)) {
+                try {
                     clientSocket.Connect(ip, portNum); 
                     username = txtBoxUsername.Text;
                     clientSocket.Send(Encoding.Default.GetBytes(username));
@@ -59,6 +53,10 @@ namespace tictactoe_network_client
                     string serverResponse = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
                     if (serverResponse.Equals("USERNAME_IS_USED")) {
                         logs.AppendText("There is already a player with this username!\n");
+                        btnConnect.Enabled = true;
+                    } 
+                    else if (serverResponse.Equals("SERVER_IS_FULL")) {
+                        logs.AppendText("The server is at maximum capacity!\n");
                         btnConnect.Enabled = true;
                     } else {
                         txtBoxChoice.Enabled = true;
@@ -84,39 +82,46 @@ namespace tictactoe_network_client
         
         // Maybe add a separate listener for the game? For later
 
-        private void Receive()
-        {
+        private void Receive() {
             while (connected) {
                 try {
                     Byte[] buffer = new Byte[64];
                     clientSocket.Receive(buffer);
                     string incomingMessage = Encoding.Default.GetString(buffer);
                     string message = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
+                    // Start receiving game related messages
                     if (!inGame && message.Equals("GAME_START")) {
                         inGame = true;
                         gameBoard.Invoke(new Action(() => gameBoard.Visible = true));
+                        txtBoxChoice.Enabled = true;
+                        btnSend.Enabled = true;
                         ClearBoard();
                         logs.AppendText("The game has started!\n");
                         continue;
                     }
-
-                    if (inGame)
-                    {
-                        if (message.StartsWith("BOARD_ADD")) // BOARD_ADD_X_1
-                        {
+                    if (inGame) {
+                        if (message.Equals("GAME_RESET")) {
+                            ClearBoard();
+                            txtBoxChoice.Enabled = false;
+                            btnSend.Enabled = false;
+                            inGame = false;
+                            logs.AppendText("The game has been reset.\n");
+                            continue;
+                        }
+                        if (message.StartsWith("BOARD_ADD")) { // BOARD_ADD_X_1
                             string[] splitMessage = message.Split('_');
                             SetBoardText(int.Parse(splitMessage[2]), splitMessage[3]);
                             continue;
                         }
-
-                        if (message.StartsWith("GAME_END")) // GAME_END_DRAW
-                        {
+                        if (message.StartsWith("GAME_END")) { // GAME_END_DRAW
                             string[] splitMessage = message.Split(new char[] { '_' }, 3);
                             string result = "DRAW" == splitMessage[2]
-                                ? "Game ended in a draw"
+                                ? "Game ended in a draw."
                                 : $"{splitMessage[2]} won!";
                             logs.AppendText($"{result}\n");
                             inGame = false;
+                            txtBoxChoice.Enabled = false;
+                            btnSend.Enabled = false;
                             continue;
                         }
                     }
@@ -124,19 +129,16 @@ namespace tictactoe_network_client
                     logs.AppendText($"Server: {message}\n");
                 }
                 catch {
-                    if (!terminating)
-                    {
-                        logs.AppendText("Disconnected from the server\n");
+                    if (!terminating) {
+                        logs.AppendText("Disconnected from the server.\n");
                         gameBoard.Invoke(new Action(() => gameBoard.Visible = false));
                         btnConnect.Enabled = true;
                         txtBoxChoice.Enabled = false;
                         btnSend.Enabled = false;
                     }
-
                     clientSocket.Close();
                     connected = false;
                 }
-
             }
         }
         private void SetBoardText(int boardNumber, string shape) {
@@ -152,31 +154,19 @@ namespace tictactoe_network_client
                 board.Text = i.ToString();
             }
         }
-
-        private void Disconnect()
-        {
-            clientSocket.Close();
-            connected = false;
-            btnConnect.Text = "Connect";
-        }
-
-        private void MainWindow_FormClosing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
+        
+        private void MainWindow_FormClosing(object sender, System.ComponentModel.CancelEventArgs e) {
             connected = false;
             terminating = true;
             Environment.Exit(0);
         }
 
-        private void button_send_Click(object sender, EventArgs e)
-        {
+        private void btnSend_Click(object sender, EventArgs e) {
             string message = txtBoxChoice.Text;
-            if (message != "" && message.Length <= 64)
-            {
+            if (message != "" && message.Length <= 64) {
                 logs.AppendText($"{username}: {message}\n");
-                Byte[] buffer = Encoding.Default.GetBytes(message);
-                clientSocket.Send(buffer);
+                clientSocket.Send(Encoding.Default.GetBytes(message));
             }
-
         }
         
     }
