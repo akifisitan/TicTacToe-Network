@@ -307,6 +307,7 @@ namespace tictactoe_network_server
             NotifyGamePlayers($"{player1.Username}'s ({player1.Shape}) turn.");
             gameBoard.Visible = true;
             btnStartGame.Text = "Reset Game";
+            txtTurn.Text = "X's turn";
         }
 
         private void NotifyGamePlayers(string message) {
