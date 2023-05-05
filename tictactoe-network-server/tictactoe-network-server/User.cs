@@ -1,22 +1,17 @@
 ﻿using System.Net.Sockets;
 
-namespace tictactoe_network_server
-{
-    public class User
-    {
-        public string Username { get; set; }
-        public Socket Socket { get; set; }
+namespace tictactoe_network_server {
+    public class User {
+        public string Username { get; }
+        public Socket Socket { get; }
         public int Wins { get; set; }
         public int Losses { get; set; }
-
         public int Draws { get; set; }
-
         public bool HasTurn { get; set; }
         public bool InGame { get; set; }
         public string Shape { get; set; }
 
-        public User(string username, Socket socket)
-        {
+        public User(string username, Socket socket) {
             Username = username;
             Socket = socket;
             Wins = 0;
@@ -24,7 +19,7 @@ namespace tictactoe_network_server
             Draws = 0;
             InGame = false;
             HasTurn = false;
-            Shape = "-";
+            Shape = ""; // Will be set by the game, if in-game
         }
     }
 }

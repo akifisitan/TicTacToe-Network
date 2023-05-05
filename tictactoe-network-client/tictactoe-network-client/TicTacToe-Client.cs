@@ -13,11 +13,16 @@ using System.Windows.Forms;
 namespace tictactoe_network_client {
     public partial class MainWindow : Form {
 
+        // Client socket 
+        Socket clientSocket;
+
+        // Client's username
+        string username = "";
+
+        // Control flow variables
         bool terminating = false;
         bool connected = false; 
-        bool inGame = false;
-        Socket clientSocket;
-        private string username = "";
+        bool inGame = false; 
 
         public MainWindow() {
             Control.CheckForIllegalCrossThreadCalls = false;
@@ -84,7 +89,7 @@ namespace tictactoe_network_client {
                     // Change the connect button to the disconnect button
                     btnConnect.Text = "Disconnect";
                     // Start a thread to receive messages from the server
-                    Thread receiveThread = new Thread(Receive);
+                    Thread receiveThread = new Thread(ReceiveMessages);
                     receiveThread.Start();
                 }
             }
@@ -95,7 +100,8 @@ namespace tictactoe_network_client {
             btnConnect.Enabled = true;
         }
         
-        private void Receive() {
+        // Receive messages from the server
+        private void ReceiveMessages() {
             while (connected) {
                 try {
                     // Receive messages from the server
@@ -130,7 +136,7 @@ namespace tictactoe_network_client {
                         if (message.StartsWith("GAME_END")) { // GAME_END_DRAW
                             string[] splitMessage = message.Split(new char[] { '_' }, 3);
                             string result = "DRAW" == splitMessage[2]
-                                ? "Game ended in a draw."
+                                ? "Game ended in a draw!"
                                 : $"{splitMessage[2]} wins!";
                             logs.AppendText($"{result}\n");
                             inGame = false;
@@ -139,7 +145,7 @@ namespace tictactoe_network_client {
                             continue;
                         }
                     }
-                    // Generic messages
+                    // Generic messages from the server
                     logs.AppendText($"Server: {message}\n");
                 }
                 // Handle exceptions
@@ -162,16 +168,16 @@ namespace tictactoe_network_client {
         
         // Functions for manipulating the game board
         private void SetBoardText(int boardNumber, string shape) {
-            Label board = Controls.Find($"board{boardNumber}", true).FirstOrDefault() as Label;
-            if (board != null) {
+            if (Controls.Find($"board{boardNumber}", true).FirstOrDefault() is Label board) {
                 board.Text = shape;
             }
         }
 
         private void ClearBoard() {
             for (int i = 1; i <= 9; i++) {
-                Label board = Controls.Find($"board{i}", true).FirstOrDefault() as Label;
-                board.Text = i.ToString();
+                if (Controls.Find($"board{i}", true).FirstOrDefault() is Label board) {
+                    board.Text = i.ToString();
+                }
             }
         }
         
