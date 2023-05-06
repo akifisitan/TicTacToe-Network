@@ -168,14 +168,16 @@ namespace tictactoe_network_client {
         
         // Functions for manipulating the game board
         private void SetBoardText(int boardNumber, string shape) {
-            if (Controls.Find($"board{boardNumber}", true).FirstOrDefault() is Label board) {
+            Label board = Controls.Find($"board{boardNumber}", true).FirstOrDefault() as Label;
+            if (board != null) {
                 board.Text = shape;
             }
         }
 
         private void ClearBoard() {
             for (int i = 1; i <= 9; i++) {
-                if (Controls.Find($"board{i}", true).FirstOrDefault() is Label board) {
+                Label board = Controls.Find($"board{i}", true).FirstOrDefault() as Label;
+                if (board != null) {
                     board.Text = i.ToString();
                 }
             }
