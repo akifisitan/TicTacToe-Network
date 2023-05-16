@@ -14,15 +14,17 @@ namespace tictactoe_network_client {
     public partial class MainWindow : Form {
 
         // Client socket 
-        Socket clientSocket;
+        private Socket clientSocket;
+        private List<Label> board = new List<Label> { null };
 
         // Client's username
-        string username = "";
+        private string username = "";
 
         // Control flow variables
-        bool terminating = false;
-        bool connected = false; 
-        bool inGame = false; 
+        private bool terminating = false;
+        private bool connected = false; 
+        private bool inGame = false;
+        private bool isActivePlayer = false;
 
         public MainWindow() {
             Control.CheckForIllegalCrossThreadCalls = false;
@@ -88,6 +90,15 @@ namespace tictactoe_network_client {
                     txtBoxPort.Enabled = false;
                     // Change the connect button to the disconnect button
                     btnConnect.Text = "Disconnect";
+                    // Fill up the game board (Should be only done once optimally)
+                    if (board.Count < 9) {
+                        for (int i = 1; i <= 9; i++) {
+                            Label boardx = Controls.Find($"board{i}", true).FirstOrDefault() as Label;
+                            if (boardx != null) {
+                                board.Add(boardx);
+                            }
+                        }
+                    }
                     // Start a thread to receive messages from the server
                     Thread receiveThread = new Thread(ReceiveMessages);
                     receiveThread.Start();
@@ -127,12 +138,18 @@ namespace tictactoe_network_client {
                             inGame = false;
                             logs.AppendText("The game has been reset.\n");
                             continue;
+                        } 
+                        if (message.StartsWith("BOARD_B")) { // "BOARD_BX2OX5XO8X"
+                            string[] splitMessage = message.Split('_');
+                            ReceiveBoardState(splitMessage[1]);
+                            continue;
                         }
+                        /* Old
                         if (message.StartsWith("BOARD_ADD")) { // BOARD_ADD_X_1
                             string[] splitMessage = message.Split('_');
                             SetBoardText(int.Parse(splitMessage[2]), splitMessage[3]);
                             continue;
-                        }
+                        }*/
                         if (message.StartsWith("GAME_END")) { // GAME_END_DRAW
                             string[] splitMessage = message.Split(new char[] { '_' }, 3);
                             string result = "DRAW" == splitMessage[2]
@@ -153,6 +170,9 @@ namespace tictactoe_network_client {
                     if (!terminating) {
                         logs.AppendText("Disconnected from the server.\n");
                         gameBoard.Invoke(new Action(() => gameBoard.Visible = false));
+                        ClearBoard();
+                        inGame = false;
+                        btnConnect.Text = "Connect";
                         btnConnect.Enabled = true;
                         txtBoxUsername.Enabled = true;
                         txtBoxIp.Enabled = true;
@@ -168,30 +188,18 @@ namespace tictactoe_network_client {
         
         // Functions for manipulating the game board
         private void SetBoardText(int boardNumber, string shape) {
-            Label board = Controls.Find($"board{boardNumber}", true).FirstOrDefault() as Label;
-            if (board != null) {
-                board.Text = shape;
-            }
+            board[boardNumber].Text = shape;
         }
         
-        private void ReceiveBoard(string[][] receivedBoard) {
-            board1.Text = receivedBoard[0][0];
-            board2.Text = receivedBoard[0][1];
-            board3.Text = receivedBoard[0][2];
-            board4.Text = receivedBoard[1][0];
-            board5.Text = receivedBoard[1][1];
-            board6.Text = receivedBoard[1][2];
-            board7.Text = receivedBoard[2][0];
-            board8.Text = receivedBoard[2][1];
-            board9.Text = receivedBoard[2][2];
+        private void ReceiveBoardState(string receivedBoard) {
+            for (int i = 1; i <= 9; i++) {
+                board[i].Text = receivedBoard[i].ToString();
+            }
         }
 
         private void ClearBoard() {
             for (int i = 1; i <= 9; i++) {
-                Label board = Controls.Find($"board{i}", true).FirstOrDefault() as Label;
-                if (board != null) {
-                    board.Text = i.ToString();
-                }
+                board[i].Text = i.ToString();
             }
         }
         

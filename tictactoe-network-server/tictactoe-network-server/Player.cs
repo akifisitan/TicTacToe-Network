@@ -1,5 +1,4 @@
-﻿
-namespace tictactoe_network_server {
+﻿namespace tictactoe_network_server {
     public class Player {
         public string Username { get; }
         public int Wins { get; set; }

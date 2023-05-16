@@ -32,8 +32,8 @@ namespace tictactoe_network_server {
         private Game game = new Game();
         
         // Control flow variables
-        bool terminating = false;
-        bool listening = false;
+        private bool terminating = false;
+        private bool listening = false;
         
         public MainWindow() {
             Control.CheckForIllegalCrossThreadCalls = false;
@@ -96,7 +96,24 @@ namespace tictactoe_network_server {
                         RefreshPlayerList();
                         // Add user to the game waitList if there is an ongoing game
                         // Problem with this arises when the game is paused due to the lack of players
-                        if (game.IsActive) game.AddToWaitList(username);
+                        if (game.IsActive) {
+                            game.AddToWaitList(username);
+                        }
+                        else if (game.IsAwaitingPlayer) {
+                            game.AddToWaitList(username);
+                            string newPlayerUsername = game.PickNewPlayerFromWaitList();
+                            if (newPlayerUsername == "") {
+                                logs.AppendText("No suitable player found, waiting for another user to join...\n");
+                            }
+                            else {
+                                Player newPlayer = scores.ContainsKey(newPlayerUsername) ?
+                                    scores[newPlayerUsername] : new Player(newPlayerUsername);
+                                string resumeGameStatus = game.ResumeGame(newPlayer);
+                                logs.AppendText(resumeGameStatus != ""
+                                    ? $"Resuming the game with {newPlayerUsername} as the new player.\n"
+                                    : "Error resuming the game.\n");
+                            }
+                        }
                         // Start a separate thread to receive messages from the connected client  
                         Thread receiveThread = new Thread(() => ReceiveMessages(user)); 
                         receiveThread.Start();
@@ -163,7 +180,8 @@ namespace tictactoe_network_server {
                     }
                     // Correct play
                     logs.AppendText($"{player.Username}'s ({player.Shape}) play: {incomingMessage}\n");
-                    NotifyClients($"BOARD_ADD_{playerChoice}_{player.Shape}");
+                    NotifyClients($"BOARD_{game.BoardToString()}");
+                    // NotifyClients($"BOARD_ADD_{playerChoice}_{player.Shape}");
                     NotifyClients($"{user.Username}'s ({player.Shape}) play: {playerChoice}");
                     // Get the next player from the gamePlayers list
                     Player nextPlayer = user.Username != game.Players.Player1.Username 
@@ -213,16 +231,18 @@ namespace tictactoe_network_server {
                     if (game.IsActive && game.PlayerUsernames().Contains(user.Username)) {
                         logs.AppendText($"{user.Username} has left the game. Looking for possible candidates...\n");
                         game.RemovePlayer(user.Username);
-                        game.LeftGame.Add(user.Username);
+                        game.AddToLeftGameList(user.Username);
                         string newPlayerUsername = game.PickNewPlayerFromWaitList();
                         if (newPlayerUsername == "") {
-                            logs.AppendText("No suitable player found, waiting for another user to join...\n");
+                            logs.AppendText("No suitable player found, waiting for an eligible user to join...\n");
                         }
                         else {
                             Player newPlayer = scores.ContainsKey(newPlayerUsername) ?
                                 scores[newPlayerUsername] : new Player(newPlayerUsername);
-                            game.ResumeGame(newPlayer);
-                            logs.AppendText($"Resuming the game with {newPlayerUsername} as the new player.\n");
+                            string resumeGameStatus = game.ResumeGame(newPlayer);
+                            logs.AppendText(resumeGameStatus != ""
+                                ? $"Resuming the game with {newPlayerUsername} as the new player.\n"
+                                : "Error resuming the game.\n");
                         }
                     }
                     user.Socket.Close();
@@ -311,6 +331,18 @@ namespace tictactoe_network_server {
             foreach (User user in connectedClients.Values) {
                 SendMessage(user, message);
             }
+        }
+        
+        private void NotifySpectators(string message) {
+            foreach (User user in connectedClients.Values) {
+                if (game.PlayerUsernames().Contains(user.Username)) continue;
+                SendMessage(user, message);
+            }
+        }
+
+        private void NotifyPlayers(string message) {
+            SendMessage(connectedClients[game.Players.Player1.Username], message);
+            SendMessage(connectedClients[game.Players.Player2.Username], message);
         }
         
     }

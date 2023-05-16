@@ -303,7 +303,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(627, 522);
+            this.ClientSize = new System.Drawing.Size(873, 522);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.gameBoard);
             this.Controls.Add(this.txtBoxUsername);
