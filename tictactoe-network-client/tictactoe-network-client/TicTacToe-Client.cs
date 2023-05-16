@@ -173,6 +173,18 @@ namespace tictactoe_network_client {
                 board.Text = shape;
             }
         }
+        
+        private void ReceiveBoard(string[][] receivedBoard) {
+            board1.Text = receivedBoard[0][0];
+            board2.Text = receivedBoard[0][1];
+            board3.Text = receivedBoard[0][2];
+            board4.Text = receivedBoard[1][0];
+            board5.Text = receivedBoard[1][1];
+            board6.Text = receivedBoard[1][2];
+            board7.Text = receivedBoard[2][0];
+            board8.Text = receivedBoard[2][1];
+            board9.Text = receivedBoard[2][2];
+        }
 
         private void ClearBoard() {
             for (int i = 1; i <= 9; i++) {

@@ -48,9 +48,12 @@
             this.txtTurn = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.txtBoxScores = new System.Windows.Forms.RichTextBox();
             this.gameBoard.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnListen
@@ -80,6 +83,7 @@
             this.txtBoxPort.Name = "txtBoxPort";
             this.txtBoxPort.Size = new System.Drawing.Size(148, 26);
             this.txtBoxPort.TabIndex = 2;
+            this.txtBoxPort.Text = "80";
             // 
             // logs
             // 
@@ -258,12 +262,32 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Players";
             // 
+            // groupBox3
+            // 
+            this.groupBox3.Controls.Add(this.txtBoxScores);
+            this.groupBox3.Location = new System.Drawing.Point(795, 115);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(257, 314);
+            this.groupBox3.TabIndex = 32;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "Scores (W/L/D)";
+            // 
+            // txtBoxScores
+            // 
+            this.txtBoxScores.Location = new System.Drawing.Point(12, 28);
+            this.txtBoxScores.Name = "txtBoxScores";
+            this.txtBoxScores.ReadOnly = true;
+            this.txtBoxScores.Size = new System.Drawing.Size(239, 272);
+            this.txtBoxScores.TabIndex = 0;
+            this.txtBoxScores.Text = "";
+            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(795, 444);
+            this.ClientSize = new System.Drawing.Size(1086, 444);
+            this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.gameBoard);
@@ -278,9 +302,14 @@
             this.gameBoard.ResumeLayout(false);
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
+            this.groupBox3.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
         }
+
+        private System.Windows.Forms.RichTextBox txtBoxScores;
+
+        private System.Windows.Forms.GroupBox groupBox3;
 
         private System.Windows.Forms.Label txtTurn;
 
