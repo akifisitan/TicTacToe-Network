@@ -3,14 +3,25 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
 
-// Player1's shape is always X, Player2's shape is always O
 namespace tictactoe_network_server {
     public class Game {
+        
+        // Stores labels of the game board for easier UI manipulation
         public List<Label> Board { get; }
+        
+        // Stores the active players of the game
         public PlayerPair Players { get; }
+        
+        // Queue to store the waiting players
         private Queue<string> WaitList { get; }
+        
+        // Set to store the players that left the current game
         private HashSet<string> LeftGame { get; }
+        
+        // True if the game is ongoing
         public bool IsActive { get; set; }
+        
+        // True if the game is paused and requires an eligible player to join
         public bool IsAwaitingPlayer { get; set; }
         
         // Stores player which had the turn before a game pause (0: None, 1: Player1, 2: Player2)

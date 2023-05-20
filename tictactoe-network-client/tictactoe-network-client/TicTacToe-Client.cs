@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace tictactoe_network_client {
@@ -15,6 +11,8 @@ namespace tictactoe_network_client {
 
         // Client socket 
         private Socket clientSocket;
+        
+        // List to store the board UI elements / Example: board[1] = gameBoard1
         private List<Label> board = new List<Label> { null };
 
         // Client's username
@@ -25,6 +23,8 @@ namespace tictactoe_network_client {
         private bool connected = false; 
         private bool inGame = false;
         private bool isActivePlayer = false;
+
+        //  --- UI Logic ---
 
         public MainWindow() {
             Control.CheckForIllegalCrossThreadCalls = false;
@@ -105,9 +105,9 @@ namespace tictactoe_network_client {
                     // Fill up the game board (Should be only done once optimally)
                     if (board.Count < 9) {
                         for (int i = 1; i <= 9; i++) {
-                            Label boardx = Controls.Find($"board{i}", true).FirstOrDefault() as Label;
-                            if (boardx != null) {
-                                board.Add(boardx);
+                            Label boardX = Controls.Find($"board{i}", true).FirstOrDefault() as Label;
+                            if (boardX != null) {
+                                board.Add(boardX);
                             }
                         }
                     }
@@ -123,13 +123,31 @@ namespace tictactoe_network_client {
             btnConnect.Enabled = true;
         }
         
+        // Send game choices to the server 
+        private void btnPlay_Click(object sender, EventArgs e) {
+            string message = txtBoxChoice.Text;
+            int playerChoice;
+            if (Int32.TryParse(message, out playerChoice) && 1 <= playerChoice && playerChoice <= 9) {
+                // logs.AppendText($"Your play: {message}\n");
+                txtBoxChoice.Text = "";
+                clientSocket.Send(Encoding.Default.GetBytes(message));
+                btnPlay.Enabled = false;
+                txtBoxChoice.Enabled = false;
+            }
+            else {
+                logs.AppendText("Please enter a number. (1-9)\n");
+            }
+        }
+        
+        //  --- UI Logic End ---
+        
+        //  --- Main Functions ---
+        
         // Receive messages from the server
         private void ReceiveMessages() {
             while (connected) {
                 try {
                     // Receive messages from the server
-                    // problem: the buffer can contain multiple different messages
-                    // so find a way to separate them and process them one by one
                     Byte[] buffer = new Byte[128];
                     clientSocket.Receive(buffer);
                     string incomingMessage = Encoding.Default.GetString(buffer);
@@ -163,6 +181,7 @@ namespace tictactoe_network_client {
                                 $"-> {splitMessage[1]} ({splitMessage[2]}/{splitMessage[3]}/{splitMessage[4]})\n");
                             continue;
                         }
+                        // Clear the scoreboard
                         if (message.Equals("CLEAR_SCOREBOARD")) {
                             txtBoxScores.Clear();
                             continue;
@@ -240,6 +259,10 @@ namespace tictactoe_network_client {
             }
         }
         
+        //  --- Main Functions End ---
+        
+        //  --- Helper Functions ---
+        
         private void ReceiveBoardState(string receivedBoard) {
             for (int i = 1; i <= 9; i++) {
                 board[i].Text = receivedBoard[i].ToString();
@@ -252,21 +275,6 @@ namespace tictactoe_network_client {
             }
         }
         
-        // Send game choices to the server 
-        private void btnPlay_Click(object sender, EventArgs e) {
-            string message = txtBoxChoice.Text;
-            int playerChoice;
-            if (Int32.TryParse(message, out playerChoice) && 1 <= playerChoice && playerChoice <= 9) {
-                // logs.AppendText($"Your play: {message}\n");
-                txtBoxChoice.Text = "";
-                clientSocket.Send(Encoding.Default.GetBytes(message));
-                btnPlay.Enabled = false;
-                txtBoxChoice.Enabled = false;
-            }
-            else {
-                logs.AppendText("Please enter a number. (1-9)\n");
-            }
-        }
-        
+        //  --- Helper Functions End ---
     }
 }

@@ -13,7 +13,7 @@
             Losses = 0;
             Draws = 0;
             HasTurn = false;
-            Shape = ""; // Will be set by the game, if in-game
+            Shape = ""; // Will be set by the game, if in-game. Player 1 is always X
         }
     }
 }

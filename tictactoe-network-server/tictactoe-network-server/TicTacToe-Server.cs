@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace tictactoe_network_server {
@@ -36,6 +30,7 @@ namespace tictactoe_network_server {
         private bool terminating = false;
         private bool listening = false;
         
+        //  --- UI Logic ---
         public MainWindow() {
             Control.CheckForIllegalCrossThreadCalls = false;
             this.FormClosing += new FormClosingEventHandler(MainWindow_FormClosing);
@@ -67,6 +62,30 @@ namespace tictactoe_network_server {
                 logs.AppendText("Please check the port number!\n");
             }
         }
+        
+        // Start / Reset game button logic
+        private void btnStartGame_Click(object sender, EventArgs e) {
+            if (btnStartGame.Text == "Reset Game") {
+                ResetGame();
+                return;
+            }
+            if (connectedClients.Count < 2) {
+                logs.AppendText("There are not enough players to start the game!\n");
+                return;
+            }
+            // Fill up the game board (Will only be done once)
+            if (game.Board.Count < 9) {
+                for (int i = 1; i <= 9; i++) {
+                    Label board = Controls.Find($"board{i}", true).FirstOrDefault() as Label;
+                    if (board != null) { game.Board.Add(board); }
+                }
+            }
+            StartNewGame();
+        }
+        
+        //  --- UI Logic End ---
+        
+        //  --- Main Functions ---
         
         // Accept incoming connections
         private void AcceptConnections() {
@@ -122,36 +141,6 @@ namespace tictactoe_network_server {
             }
         }
 
-        // Method for refreshing the player list ui
-        private void RefreshPlayerList() {
-            txtBoxPlayers.Clear();
-            StringBuilder sb = new StringBuilder();
-            foreach (string username in connectedClients.Keys) {
-                sb.Append($"-> {username}\n");
-            }
-            txtBoxPlayers.AppendText(sb.ToString());
-        }
-        
-        // Method for updating the scoreboard
-        private void UpdateScoreboard() {
-            txtBoxScores.Clear();
-            StringBuilder sb = new StringBuilder();
-            foreach (Player player in scores.Values) {
-                sb.Append($"-> {player.Username} ({player.Wins}/{player.Losses}/{player.Draws})\n");
-            }
-            txtBoxScores.AppendText(sb.ToString());
-        }
-
-        // Send the scoreboard state to every user as "SCOREBOARD/username/wins/losses/draws" for each player
-        private void BroadcastScoreboard() {
-            foreach (User user in connectedClients.Values) {
-                foreach (Player player in scores.Values) {
-                    SendMessage(user, $"SCOREBOARD/{player.Username}/{player.Wins}/" +
-                                      $"{player.Losses}/{player.Draws}\n");
-                }
-            }
-        }
-        
         // Receive game moves from clients
         private void ReceiveMessages(User user) {
             bool connected = true;
@@ -205,7 +194,7 @@ namespace tictactoe_network_server {
                         NotifyClients($"GAME_END_{user.Username}\n");
                         game.EndGame();
                         // btnStartGame.Text = "Start Game";
-                        StartGame();
+                        StartNewGame();
                         continue;
                     }
                     // Draw, as the board is full
@@ -221,7 +210,7 @@ namespace tictactoe_network_server {
                         NotifyClients("GAME_END_DRAW\n");
                         game.EndGame();
                         // btnStartGame.Text = "Start Game";
-                        StartGame();
+                        StartNewGame();
                         continue;
                     }
                     // Game continues, set the current turn to the other player
@@ -246,12 +235,8 @@ namespace tictactoe_network_server {
                     RefreshPlayerList();
                     // If an active player leaves the game
                     if (game.IsActive && game.IsPlayer(leavingPlayer)) {
-                        game.IsActive = false;
-                        game.IsAwaitingPlayer = true;
-                        // Store the current state of the game, that is who the turn belongs to
-                        game.TurnBeforePause = game.Players.Player1.HasTurn ? 1 : 2;
+                        PauseGame();
                         logs.AppendText($"Looking for possible replacements for {leavingPlayer}...\n");
-                        NotifyClients("GAME_PAUSE\n");
                         game.RemovePlayer(leavingPlayer);
                         game.AddToLeftGameList(leavingPlayer);
                         ResumeGame();
@@ -264,37 +249,31 @@ namespace tictactoe_network_server {
                 }
             }
         }
-
-        private void ResumeGame() {
-            string newPlayerUsername = game.PickNewPlayerFromWaitList();
-            // DEBUG logs.AppendText($"Chose {newPlayerUsername} as user.\n");
-            if (newPlayerUsername == "") {
-                logs.AppendText("The game will resume when an eligible user joins.\n");
-                NotifyClients("The game will resume when an eligible user joins.\n");
+        
+        //  --- Main Functions End ---
+        
+        //  --- Helper Functions ---
+        
+        // Method for refreshing the player list ui
+        private void RefreshPlayerList() {
+            txtBoxPlayers.Clear();
+            StringBuilder sb = new StringBuilder();
+            foreach (string username in connectedClients.Keys) {
+                sb.Append($"-> {username}\n");
             }
-            else {
-                Player newPlayer = scores.ContainsKey(newPlayerUsername) ?
-                    scores[newPlayerUsername] : new Player(newPlayerUsername);
-                int resumeStatus = game.ResumeGame(newPlayer);
-                if (resumeStatus == 0) {
-                    logs.AppendText("Still missing a player.\n");
-                    NotifyClients("Still missing a player.\n");
-                }
-                else {
-                    game.IsAwaitingPlayer = false;
-                    game.IsActive = true;
-                    NotifySpectators("GAME_RESUME_SPECTATOR\n");
-                    NotifyPlayer(game.Players.Player1, "GAME_RESUME_PLAYER1\n");
-                    NotifyPlayer(game.Players.Player2, "GAME_RESUME_PLAYER2\n");
-                    NotifyPlayer(game.TurnBeforePause == 1 ? game.Players.Player1 : game.Players.Player2, 
-                        "YOUR_TURN\n");
-                    NotifyClients($"BOARD_{game.BoardToString()}\n");
-                    logs.AppendText($"Resuming the game with {newPlayerUsername} as the new player.\n");
-                    NotifyClients($"Resuming the game with {newPlayerUsername} as the new player.\n");
-                }
-            }
+            txtBoxPlayers.AppendText(sb.ToString());
         }
         
+        // Method for updating the scoreboard
+        private void UpdateScoreboard() {
+            txtBoxScores.Clear();
+            StringBuilder sb = new StringBuilder();
+            foreach (Player player in scores.Values) {
+                sb.Append($"-> {player.Username} ({player.Wins}/{player.Losses}/{player.Draws})\n");
+            }
+            txtBoxScores.AppendText(sb.ToString());
+        }
+
         // Send a message to a connected user
         private void SendMessage(User user, string message) {
             try {
@@ -304,44 +283,45 @@ namespace tictactoe_network_server {
                 }
                 Byte[] buffer = Encoding.Default.GetBytes(message);
                 user.Socket.Send(buffer);
-            } catch {
-                logs.AppendText("There is a problem! Check the connection...\n");
-                terminating = true;
-                txtBoxPort.Enabled = true;
-                btnListen.Enabled = true;
-                serverSocket.Close();
+            } catch (Exception e) { 
+                logs.AppendText($"Error while sending a message to user: {user.Username}.\n");
+                logs.AppendText($"DEBUG: {e}");
             }
         }
         
-        // Start game button logic
-        private void btnStartGame_Click(object sender, EventArgs e) {
-            if (btnStartGame.Text == "Reset Game") {
-                ResetGame();
-                return;
+        // Send a message to every connected user 
+        private void NotifyClients(string message) {
+            foreach (User user in connectedClients.Values) {
+                SendMessage(user, message);
             }
-            if (connectedClients.Count < 2) {
-                logs.AppendText("There are not enough players to start the game!\n");
-                return;
+        }
+        
+        // Send a message to the ongoing game's spectators
+        private void NotifySpectators(string message) {
+            foreach (User user in connectedClients.Values) {
+                if (game.IsPlayer(user.Username)) continue;
+                SendMessage(user, message);
             }
-            // Fill up the game board (Will only be done once)
-            if (game.Board.Count < 9) {
-                for (int i = 1; i <= 9; i++) {
-                    Label board = Controls.Find($"board{i}", true).FirstOrDefault() as Label;
-                    if (board != null) { game.Board.Add(board); }
-                }
-            }
-            StartGame();
         }
 
-        private void ResetGame() {
-            NotifyClients("GAME_RESET\n");
-            game.ResetGame();
-            gameBoard.Visible = false;
-            btnStartGame.Text = "Start Game";
-            logs.AppendText("Game has been reset.\n");
+        // Send a message to one of the ongoing game's players
+        private void NotifyPlayer(Player player, string message) {
+            SendMessage((User) connectedClients[player.Username], message);
         }
         
-        private void StartGame() {
+        // Send the scoreboard state to every user as "SCOREBOARD/username/wins/losses/draws" for each player
+        private void BroadcastScoreboard() {
+            foreach (User user in connectedClients.Values) {
+                SendMessage(user, "CLEAR_SCOREBOARD\n");
+                foreach (Player player in scores.Values) {
+                    SendMessage(user, 
+                        $"SCOREBOARD/{player.Username}/{player.Wins}/{player.Losses}/{player.Draws}\n");
+                }
+            }
+        }
+        
+        // Start a new game
+        private void StartNewGame() {
             game.ResetGame();
             List<string> selectedPlayers = new List<string>();
             foreach (string username in connectedClients.Keys) {
@@ -350,7 +330,7 @@ namespace tictactoe_network_server {
                 else
                     game.AddToWaitList(username);
             }
-            // Either create a new player or get the player from the scoreboard data
+            // Get the players from the scoreboard data if they exist or create new players 
             string p1Username = selectedPlayers[0];
             Player player1 = scores.ContainsKey(p1Username) ? 
                 scores[p1Username] : new Player(p1Username);
@@ -373,23 +353,55 @@ namespace tictactoe_network_server {
             txtTurn.Text = "X's turn";
         }
         
-        // Function to send messages to the participants of the current game
-        private void NotifyClients(string message) {
-            foreach (User user in connectedClients.Values) {
-                SendMessage(user, message);
-            }
+        // Pause the ongoing game
+        private void PauseGame() {
+            game.IsActive = false;
+            game.IsAwaitingPlayer = true;
+            // Store the current state of the game, that is who the turn belongs to
+            game.TurnBeforePause = game.Players.Player1.HasTurn ? 1 : 2;
+            NotifyClients("GAME_PAUSE\n");
         }
         
-        private void NotifySpectators(string message) {
-            foreach (User user in connectedClients.Values) {
-                if (game.IsPlayer(user.Username)) continue;
-                SendMessage(user, message);
+        // Attempts to resume the paused game
+        private bool ResumeGame() {
+            string newPlayerUsername = game.PickNewPlayerFromWaitList();
+            // DEBUG logs.AppendText($"Chose {newPlayerUsername} as user.\n");
+            // No new player could be picked
+            if (newPlayerUsername == "") {
+                logs.AppendText("The game will resume when an eligible user joins.\n");
+                NotifyClients("The game will resume when an eligible user joins.\n");
+                return false;
             }
+            Player newPlayer = scores.ContainsKey(newPlayerUsername) ?
+                scores[newPlayerUsername] : new Player(newPlayerUsername);
+            int resumeStatus = game.ResumeGame(newPlayer);
+            if (resumeStatus == 0) {
+                logs.AppendText("Still missing a player.\n");
+                NotifyClients("Still missing a player.\n");
+                return false;
+            }
+            game.IsAwaitingPlayer = false;
+            game.IsActive = true;
+            NotifySpectators("GAME_RESUME_SPECTATOR\n");
+            NotifyPlayer(game.Players.Player1, "GAME_RESUME_PLAYER1\n");
+            NotifyPlayer(game.Players.Player2, "GAME_RESUME_PLAYER2\n");
+            NotifyPlayer(game.TurnBeforePause == 1 ? game.Players.Player1 : game.Players.Player2, 
+                "YOUR_TURN\n");
+            NotifyClients($"BOARD_{game.BoardToString()}\n");
+            logs.AppendText($"Resuming the game with {newPlayerUsername} as the new player.\n");
+            NotifyClients($"Resuming the game with {newPlayerUsername} as the new player.\n");
+            return true;
         }
 
-        private void NotifyPlayer(Player player, string message) {
-            SendMessage((User) connectedClients[player.Username], message);
+        // Reset the ongoing game to a fresh state
+        private void ResetGame() {
+            NotifyClients("GAME_RESET\n");
+            game.ResetGame();
+            gameBoard.Visible = false;
+            btnStartGame.Text = "Start Game";
+            logs.AppendText("Game has been reset.\n");
         }
         
+        //  --- Helper Functions End ---
     }
 }
