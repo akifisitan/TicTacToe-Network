@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
 
-
+// Player1's shape is always X, Player2's shape is always O
 namespace tictactoe_network_server {
     public class Game {
         public List<Label> Board { get; }
@@ -12,6 +12,9 @@ namespace tictactoe_network_server {
         private HashSet<string> LeftGame { get; }
         public bool IsActive { get; private set; }
         public bool IsAwaitingPlayer { get; private set; }
+        
+        // Stores player which had the turn before a game pause (0: None, 1: Player1, 2: Player2)
+        public int TurnBeforePause { get; set; }
 
         public Game() {
             Board = new List<Label>(10) { null };
@@ -20,6 +23,7 @@ namespace tictactoe_network_server {
             LeftGame = new HashSet<string>();
             IsActive = false;
             IsAwaitingPlayer = false;
+            TurnBeforePause = 0;
         }
 
         public HashSet<string> PlayerUsernames() {
@@ -29,13 +33,21 @@ namespace tictactoe_network_server {
             };
         }
 
+        public bool IsPlayer1(Player player) {
+            return player.Username == Players.Player1.Username;
+        }
+
         public void RemovePlayer(string username) {
             if (username == Players.Player1.Username) {
                 Players.Player1 = null;
             }
-            else
+            else if (username == Players.Player2.Username)
             {
                 Players.Player2 = null;
+            }
+            else
+            {
+                throw new Exception("Trying to remove a player that does not exist.");
             }
         }
         
@@ -49,23 +61,40 @@ namespace tictactoe_network_server {
             IsActive = true;
         }
 
-        public string ResumeGame(Player newPlayer) {
-            string resumeStatus = "";
-            if (Players.Player1 == null) {
+        // Find a way to resume the
+        public int ResumeGame(Player newPlayer) {
+            int resumeStatus;
+            // If the game is missing both players
+            if (Players.Player1 == null && Players.Player2 == null) {
+                Players.Player1 = newPlayer;
+                Players.Player1.Shape = "X";
+                resumeStatus = 0;
+            }
+            // If the game is only missing player 1
+            else if (Players.Player1 == null) {
                 Players.Player1 = newPlayer;
                 Players.Player1.Shape = "X";
                 Players.Player2.Shape = "O";
+                Players.Player1.HasTurn = TurnBeforePause == 1;
+                Players.Player2.HasTurn = TurnBeforePause == 2;
                 IsActive = true;
                 IsAwaitingPlayer = false;
-                resumeStatus =  Players.Player1.Username;
+                resumeStatus =  1;
             }
+            // If the game is only missing player 2
             else if (Players.Player2 == null) {
                 Players.Player2 = newPlayer;
                 Players.Player1.Shape = "X";
                 Players.Player2.Shape = "O";
+                Players.Player1.HasTurn = TurnBeforePause == 1;
+                Players.Player2.HasTurn = TurnBeforePause == 2;
                 IsActive = true;
                 IsAwaitingPlayer = false;
-                resumeStatus = Players.Player2.Username;
+                resumeStatus = 2;
+            }
+            else
+            {
+                throw new Exception("Game has no missing players.");
             }
             return resumeStatus;
         }

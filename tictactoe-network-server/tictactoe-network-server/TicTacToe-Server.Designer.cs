@@ -279,6 +279,7 @@
             this.txtBoxScores.ReadOnly = true;
             this.txtBoxScores.Size = new System.Drawing.Size(239, 272);
             this.txtBoxScores.TabIndex = 0;
+            this.txtBoxScores.TabStop = false;
             this.txtBoxScores.Text = "";
             // 
             // MainWindow

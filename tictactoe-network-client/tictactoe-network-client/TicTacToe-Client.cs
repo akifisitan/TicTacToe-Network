@@ -40,12 +40,20 @@ namespace tictactoe_network_client {
 
         // Connect & Disconnect button logic
         private void button_connect_Click(object sender, EventArgs e) {
-            if (txtBoxUsername.Text == "") return;
+            // Check if the username is suitable
+            username = txtBoxUsername.Text.Trim();
+            if (username.Length < 4 || username.Length > 64) { 
+                logs.AppendText("Please make sure your username is between 4 and 64 characters.\n");
+                return;
+            }
             // Disable the button while attempting to connect
             btnConnect.Enabled = false;
             // Disconnect logic
             if (btnConnect.Text == "Disconnect") {
                 clientSocket.Close();
+                boxUsername.Visible = false;
+                gameBoard.Visible = false;
+                boxScores.Visible = false;
                 connected = false;
                 btnConnect.Text = "Connect";
                 btnConnect.Enabled = true;
@@ -65,7 +73,6 @@ namespace tictactoe_network_client {
                 // Attempt to connect to the server
                 clientSocket.Connect(ip, portNum);
                 // Connected to the server, send username to the server to check if it is available
-                username = txtBoxUsername.Text;
                 clientSocket.Send(Encoding.Default.GetBytes(username));
                 // Receive response from the server
                 Byte[] buffer = new Byte[64];
@@ -73,7 +80,7 @@ namespace tictactoe_network_client {
                 string incomingMessage = Encoding.Default.GetString(buffer);
                 string serverResponse = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
                 // Close the socket if the username is not available or the server is full
-                if (serverResponse.Equals("USERNAME_IS_USED")) {
+                if (serverResponse.Equals("USERNAME_NOT_AVAILABLE")) {
                     logs.AppendText("There is already a player with this username!\n");
                     clientSocket.Close();
                 }
@@ -88,6 +95,11 @@ namespace tictactoe_network_client {
                     txtBoxUsername.Enabled = false;
                     txtBoxIp.Enabled = false;
                     txtBoxPort.Enabled = false;
+                    labelUsername.Text = username;
+                    labelRole.Text = "Waiting for game";
+                    boxUsername.Visible = true;
+                    gameBoard.Visible = true;
+                    boxScores.Visible = true;
                     // Change the connect button to the disconnect button
                     btnConnect.Text = "Disconnect";
                     // Fill up the game board (Should be only done once optimally)
@@ -116,62 +128,105 @@ namespace tictactoe_network_client {
             while (connected) {
                 try {
                     // Receive messages from the server
-                    Byte[] buffer = new Byte[64];
+                    // problem: the buffer can contain multiple different messages
+                    // so find a way to separate them and process them one by one
+                    Byte[] buffer = new Byte[128];
                     clientSocket.Receive(buffer);
                     string incomingMessage = Encoding.Default.GetString(buffer);
-                    string message = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
-                    // Start receiving game related messages
-                    if (!inGame && message.Equals("GAME_START")) {
-                        inGame = true;
-                        gameBoard.Invoke(new Action(() => gameBoard.Visible = true));
-                        txtBoxChoice.Enabled = true;
-                        btnPlay.Enabled = true;
-                        ClearBoard();
-                        logs.AppendText("The game has started!\n");
-                        continue;
-                    }
-                    if (inGame) {
-                        if (message.Equals("GAME_RESET")) {
+                    string serverMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
+                    string[] messages = serverMessage.Split('\n');
+                    for (int i = 0; i < messages.Length - 1; i++) {
+                        string message = messages[i];
+                        // logs.AppendText($"Incoming message: {message}\n");
+                        // Start receiving game related messages
+                        if (!inGame && (message.StartsWith("GAME_START") || message.StartsWith("GAME_RESUME"))) {
+                            string[] splitMessage = message.Split('_');
+                            string role = splitMessage[2];
+                            labelRole.Text = role;
                             ClearBoard();
-                            txtBoxChoice.Enabled = false;
-                            btnPlay.Enabled = false;
-                            inGame = false;
-                            logs.AppendText("The game has been reset.\n");
-                            continue;
-                        } 
-                        if (message.StartsWith("BOARD_B")) { // "BOARD_BX2OX5XO8X"
-                            string[] splitMessage = message.Split('_');
-                            ReceiveBoardState(splitMessage[1]);
-                            continue;
-                        }
-                        /* Old
-                        if (message.StartsWith("BOARD_ADD")) { // BOARD_ADD_X_1
-                            string[] splitMessage = message.Split('_');
-                            SetBoardText(int.Parse(splitMessage[2]), splitMessage[3]);
-                            continue;
-                        }*/
-                        if (message.StartsWith("GAME_END")) { // GAME_END_DRAW
-                            string[] splitMessage = message.Split(new char[] { '_' }, 3);
-                            string result = "DRAW" == splitMessage[2]
-                                ? "Game ended in a draw!"
-                                : $"{splitMessage[2]} wins!";
-                            logs.AppendText($"{result}\n");
-                            inGame = false;
-                            txtBoxChoice.Enabled = false;
-                            btnPlay.Enabled = false;
+                            if (role != "SPECTATOR")
+                            {
+                                if (role == "PLAYER1") {
+                                    btnPlay.Enabled = true;
+                                    txtBoxChoice.Enabled = true;
+                                }
+                                isActivePlayer = true;
+                            }
+                            inGame = true;
+                            logs.AppendText(message.StartsWith("GAME_START") ? 
+                                "The game has started!\n" : "Continuing the game...\n");
                             continue;
                         }
+                        // Get scoreboard information
+                        if (message.StartsWith("SCOREBOARD")) {
+                            string[] splitMessage = message.Split('/');
+                            txtBoxScores.AppendText(
+                                $"-> {splitMessage[1]} ({splitMessage[2]}/{splitMessage[3]}/{splitMessage[4]})\n");
+                            continue;
+                        }
+                        if (message.Equals("CLEAR_SCOREBOARD")) {
+                            txtBoxScores.Clear();
+                            continue;
+                        }
+                        if (inGame) {
+                            if (message.Equals("YOUR_TURN")) {
+                                txtBoxChoice.Enabled = true;
+                                btnPlay.Enabled = true;
+                                continue;
+                            }
+
+                            if (message.Equals("GAME_PAUSE")) {
+                                txtBoxChoice.Enabled = false;
+                                btnPlay.Enabled = false;
+                                inGame = false;
+                                labelRole.Text = "Waiting for game";
+                                logs.AppendText("The game has been paused.\n");
+                                continue;
+                            }
+
+                            if (message.Equals("GAME_RESET")) {
+                                ClearBoard();
+                                txtBoxChoice.Enabled = false;
+                                btnPlay.Enabled = false;
+                                inGame = false;
+                                labelRole.Text = "In Lobby";
+                                logs.AppendText("The game has been reset.\n");
+                                continue;
+                            }
+                            if (message.StartsWith("BOARD_B")) {
+                                // "BOARD_BX2OX5XO8X"
+                                string[] splitMessage = message.Split('_');
+                                ReceiveBoardState(splitMessage[1]);
+                                continue;
+                            }
+                            if (message.Contains("GAME_END")) {
+                                // GAME_END_DRAW
+                                string[] splitMessage = message.Split(new char[] { '_' }, 3);
+                                string result = "DRAW" == splitMessage[2]
+                                    ? "Game ended in a draw!"
+                                    : $"{splitMessage[2]} wins!";
+                                logs.AppendText($"{result}\n");
+                                labelRole.Text = "In Lobby";
+                                inGame = false;
+                                txtBoxChoice.Enabled = false;
+                                btnPlay.Enabled = false;
+                                continue;
+                            }
+                        }
+                        // Generic messages from the server
+                        logs.AppendText($"Server: {message}\n");
                     }
-                    // Generic messages from the server
-                    logs.AppendText($"Server: {message}\n");
                 }
                 // Handle exceptions
                 catch {
                     if (!terminating) {
                         logs.AppendText("Disconnected from the server.\n");
-                        gameBoard.Invoke(new Action(() => gameBoard.Visible = false));
+                        // gameBoard.Invoke(new Action(() => gameBoard.Visible = false));
                         ClearBoard();
                         inGame = false;
+                        boxUsername.Visible = false;
+                        gameBoard.Visible = false;
+                        boxScores.Visible = false;
                         btnConnect.Text = "Connect";
                         btnConnect.Enabled = true;
                         txtBoxUsername.Enabled = true;
@@ -184,11 +239,6 @@ namespace tictactoe_network_client {
                     connected = false;
                 }
             }
-        }
-        
-        // Functions for manipulating the game board
-        private void SetBoardText(int boardNumber, string shape) {
-            board[boardNumber].Text = shape;
         }
         
         private void ReceiveBoardState(string receivedBoard) {
@@ -206,10 +256,16 @@ namespace tictactoe_network_client {
         // Send game choices to the server 
         private void btnPlay_Click(object sender, EventArgs e) {
             string message = txtBoxChoice.Text;
-            if (message != "" && message.Length <= 64) {
-                // logs.AppendText($"Your play: {message}\n");
+            int playerChoice;
+            if (Int32.TryParse(message, out playerChoice) && 1 <= playerChoice && playerChoice <= 9) {
+                logs.AppendText($"Your play: {message}\n");
                 txtBoxChoice.Text = "";
                 clientSocket.Send(Encoding.Default.GetBytes(message));
+                btnPlay.Enabled = false;
+                txtBoxChoice.Enabled = false;
+            }
+            else {
+                logs.AppendText("Please enter a number. (1-9)\n");
             }
         }
         
