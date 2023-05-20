@@ -229,8 +229,6 @@ namespace tictactoe_network_server {
                     }
                     connected = false;
                     connectedClients.Remove(leavingPlayer);
-                    user.Socket.Close();
-                    user = null;
                     NotifyClients($"{leavingPlayer} left the room.\n");
                     RefreshPlayerList();
                     // If an active player leaves the game
@@ -246,6 +244,9 @@ namespace tictactoe_network_server {
                         game.RemovePlayer(leavingPlayer);
                         game.AddToLeftGameList(leavingPlayer);
                     }
+                    // Release resources
+                    user.Socket.Close();
+                    user = null;
                 }
             }
         }
