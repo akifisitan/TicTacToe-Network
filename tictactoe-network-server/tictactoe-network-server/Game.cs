@@ -166,15 +166,19 @@ namespace tictactoe_network_server {
                    (Board[1].Text == Board[5].Text && Board[5].Text == Board[9].Text && Board[1].Text != "1") ||
                    (Board[3].Text == Board[5].Text && Board[5].Text == Board[7].Text && Board[3].Text != "3");
         }
-        
+
         // Function to check if the board is full, returns true if the board is full
-        public bool BoardIsFull() {
-            for (int i = 1; i <= 9; i++) {
-                if (Board[i].Text != i.ToString()) return false;
+        public bool BoardIsFull()
+        {
+            for (int i = 1; i <= 9; i++)
+            {
+                if (Board[i].Text == i.ToString()) return false;
             } 
+
             return true;
         }
         
+
         // Function to reset the game board to a clean state
         private void ResetGameBoard() {
             for (int i = 1; i <= 9; i++) {
