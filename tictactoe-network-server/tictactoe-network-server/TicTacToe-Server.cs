@@ -228,9 +228,9 @@ namespace tictactoe_network_server {
                         logs.AppendText($"{leavingPlayer} left the room.\n");
                     }
                     connected = false;
+                    connectedClients.Remove(leavingPlayer);
                     user.Socket.Close();
                     user = null;
-                    connectedClients.Remove(leavingPlayer);
                     NotifyClients($"{leavingPlayer} left the room.\n");
                     RefreshPlayerList();
                     // If an active player leaves the game
