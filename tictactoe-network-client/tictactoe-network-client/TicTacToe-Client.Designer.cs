@@ -50,9 +50,16 @@
             this.board4 = new System.Windows.Forms.Label();
             this.gameBoard = new System.Windows.Forms.GroupBox();
             this.btnPlay = new System.Windows.Forms.Button();
-            this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.boxLogs = new System.Windows.Forms.GroupBox();
+            this.labelUsername = new System.Windows.Forms.Label();
+            this.labelRole = new System.Windows.Forms.Label();
+            this.boxUsername = new System.Windows.Forms.GroupBox();
+            this.boxScores = new System.Windows.Forms.GroupBox();
+            this.txtBoxScores = new System.Windows.Forms.RichTextBox();
             this.gameBoard.SuspendLayout();
-            this.groupBox1.SuspendLayout();
+            this.boxLogs.SuspendLayout();
+            this.boxUsername.SuspendLayout();
+            this.boxScores.SuspendLayout();
             this.SuspendLayout();
             // 
             // txtBoxIp
@@ -62,6 +69,7 @@
             this.txtBoxIp.Name = "txtBoxIp";
             this.txtBoxIp.Size = new System.Drawing.Size(130, 26);
             this.txtBoxIp.TabIndex = 3;
+            this.txtBoxIp.Text = "127.0.0.1";
             // 
             // txtBoxPort
             // 
@@ -70,6 +78,7 @@
             this.txtBoxPort.Name = "txtBoxPort";
             this.txtBoxPort.Size = new System.Drawing.Size(130, 26);
             this.txtBoxPort.TabIndex = 4;
+            this.txtBoxPort.Text = "80";
             // 
             // label1
             // 
@@ -154,6 +163,7 @@
             this.txtBoxUsername.Name = "txtBoxUsername";
             this.txtBoxUsername.Size = new System.Drawing.Size(130, 26);
             this.txtBoxUsername.TabIndex = 5;
+            this.txtBoxUsername.Text = "test";
             // 
             // board3
             // 
@@ -283,25 +293,81 @@
             this.btnPlay.UseVisualStyleBackColor = true;
             this.btnPlay.Click += new System.EventHandler(this.btnPlay_Click);
             // 
-            // groupBox1
+            // boxLogs
             // 
-            this.groupBox1.Controls.Add(this.logs);
-            this.groupBox1.Location = new System.Drawing.Point(11, 182);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.groupBox1.Size = new System.Drawing.Size(352, 301);
-            this.groupBox1.TabIndex = 39;
-            this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Game Logs";
+            this.boxLogs.Controls.Add(this.logs);
+            this.boxLogs.Location = new System.Drawing.Point(11, 182);
+            this.boxLogs.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.boxLogs.Name = "boxLogs";
+            this.boxLogs.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.boxLogs.Size = new System.Drawing.Size(352, 301);
+            this.boxLogs.TabIndex = 39;
+            this.boxLogs.TabStop = false;
+            this.boxLogs.Text = "Game Logs";
+            // 
+            // labelUsername
+            // 
+            this.labelUsername.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelUsername.Location = new System.Drawing.Point(9, 17);
+            this.labelUsername.Name = "labelUsername";
+            this.labelUsername.Size = new System.Drawing.Size(300, 60);
+            this.labelUsername.TabIndex = 40;
+            this.labelUsername.Text = "SuperLongUsernameWow";
+            this.labelUsername.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // labelRole
+            // 
+            this.labelRole.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelRole.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.labelRole.Location = new System.Drawing.Point(9, 76);
+            this.labelRole.Name = "labelRole";
+            this.labelRole.Size = new System.Drawing.Size(221, 39);
+            this.labelRole.TabIndex = 41;
+            this.labelRole.Text = "In Lobby";
+            this.labelRole.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // boxUsername
+            // 
+            this.boxUsername.Controls.Add(this.labelRole);
+            this.boxUsername.Controls.Add(this.labelUsername);
+            this.boxUsername.Location = new System.Drawing.Point(385, 12);
+            this.boxUsername.Name = "boxUsername";
+            this.boxUsername.Size = new System.Drawing.Size(358, 144);
+            this.boxUsername.TabIndex = 42;
+            this.boxUsername.TabStop = false;
+            this.boxUsername.Text = "Username";
+            this.boxUsername.Visible = false;
+            // 
+            // boxScores
+            // 
+            this.boxScores.Controls.Add(this.txtBoxScores);
+            this.boxScores.Location = new System.Drawing.Point(621, 182);
+            this.boxScores.Name = "boxScores";
+            this.boxScores.Size = new System.Drawing.Size(257, 301);
+            this.boxScores.TabIndex = 43;
+            this.boxScores.TabStop = false;
+            this.boxScores.Text = "Scores (W/L/D)";
+            this.boxScores.Visible = false;
+            // 
+            // txtBoxScores
+            // 
+            this.txtBoxScores.Location = new System.Drawing.Point(12, 22);
+            this.txtBoxScores.Name = "txtBoxScores";
+            this.txtBoxScores.ReadOnly = true;
+            this.txtBoxScores.Size = new System.Drawing.Size(239, 266);
+            this.txtBoxScores.TabIndex = 0;
+            this.txtBoxScores.TabStop = false;
+            this.txtBoxScores.Text = "";
             // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(627, 522);
-            this.Controls.Add(this.groupBox1);
+            this.ClientSize = new System.Drawing.Size(904, 522);
+            this.Controls.Add(this.boxScores);
+            this.Controls.Add(this.boxUsername);
+            this.Controls.Add(this.boxLogs);
             this.Controls.Add(this.gameBoard);
             this.Controls.Add(this.txtBoxUsername);
             this.Controls.Add(this.label4);
@@ -316,12 +382,23 @@
             this.Text = "TicTacToe Client";
             this.gameBoard.ResumeLayout(false);
             this.gameBoard.PerformLayout();
-            this.groupBox1.ResumeLayout(false);
+            this.boxLogs.ResumeLayout(false);
+            this.boxUsername.ResumeLayout(false);
+            this.boxScores.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
         }
 
-        private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.GroupBox boxScores;
+        private System.Windows.Forms.RichTextBox txtBoxScores;
+
+        private System.Windows.Forms.GroupBox boxUsername;
+
+        private System.Windows.Forms.Label labelUsername;
+
+        private System.Windows.Forms.Label labelRole;
+
+        private System.Windows.Forms.GroupBox boxLogs;
 
         private System.Windows.Forms.GroupBox gameBoard;
 

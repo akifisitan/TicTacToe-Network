@@ -1,28 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace tictactoe_network_client {
     public partial class MainWindow : Form {
 
         // Client socket 
-        Socket clientSocket;
+        private Socket clientSocket;
+        
+        // List to store the board UI elements / Example: board[1] = gameBoard1
+        private List<Label> board = new List<Label> { null };
 
         // Client's username
-        string username = "";
+        private string username = "";
 
         // Control flow variables
-        bool terminating = false;
-        bool connected = false; 
-        bool inGame = false; 
+        private bool terminating = false;
+        private bool connected = false; 
+        private bool inGame = false;
+        private bool isActivePlayer = false;
+
+        //  --- UI Logic ---
 
         public MainWindow() {
             Control.CheckForIllegalCrossThreadCalls = false;
@@ -38,12 +40,20 @@ namespace tictactoe_network_client {
 
         // Connect & Disconnect button logic
         private void button_connect_Click(object sender, EventArgs e) {
-            if (txtBoxUsername.Text == "") return;
+            // Check if the username is suitable
+            username = txtBoxUsername.Text.Trim();
+            if (username.Length < 4 || username.Length > 64) { 
+                logs.AppendText("Please make sure your username is between 4 and 64 characters.\n");
+                return;
+            }
             // Disable the button while attempting to connect
             btnConnect.Enabled = false;
             // Disconnect logic
             if (btnConnect.Text == "Disconnect") {
                 clientSocket.Close();
+                boxUsername.Visible = false;
+                gameBoard.Visible = false;
+                boxScores.Visible = false;
                 connected = false;
                 btnConnect.Text = "Connect";
                 btnConnect.Enabled = true;
@@ -63,7 +73,6 @@ namespace tictactoe_network_client {
                 // Attempt to connect to the server
                 clientSocket.Connect(ip, portNum);
                 // Connected to the server, send username to the server to check if it is available
-                username = txtBoxUsername.Text;
                 clientSocket.Send(Encoding.Default.GetBytes(username));
                 // Receive response from the server
                 Byte[] buffer = new Byte[64];
@@ -71,7 +80,7 @@ namespace tictactoe_network_client {
                 string incomingMessage = Encoding.Default.GetString(buffer);
                 string serverResponse = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
                 // Close the socket if the username is not available or the server is full
-                if (serverResponse.Equals("USERNAME_IS_USED")) {
+                if (serverResponse.Equals("USERNAME_NOT_AVAILABLE")) {
                     logs.AppendText("There is already a player with this username!\n");
                     clientSocket.Close();
                 }
@@ -86,8 +95,22 @@ namespace tictactoe_network_client {
                     txtBoxUsername.Enabled = false;
                     txtBoxIp.Enabled = false;
                     txtBoxPort.Enabled = false;
+                    labelUsername.Text = username;
+                    labelRole.Text = "Waiting for game";
+                    boxUsername.Visible = true;
+                    gameBoard.Visible = true;
+                    boxScores.Visible = true;
                     // Change the connect button to the disconnect button
                     btnConnect.Text = "Disconnect";
+                    // Fill up the game board (Should be only done once optimally)
+                    if (board.Count < 9) {
+                        for (int i = 1; i <= 9; i++) {
+                            Label boardX = Controls.Find($"board{i}", true).FirstOrDefault() as Label;
+                            if (boardX != null) {
+                                board.Add(boardX);
+                            }
+                        }
+                    }
                     // Start a thread to receive messages from the server
                     Thread receiveThread = new Thread(ReceiveMessages);
                     receiveThread.Start();
@@ -100,59 +123,129 @@ namespace tictactoe_network_client {
             btnConnect.Enabled = true;
         }
         
+        // Send game choices to the server 
+        private void btnPlay_Click(object sender, EventArgs e) {
+            string message = txtBoxChoice.Text;
+            int playerChoice;
+            if (Int32.TryParse(message, out playerChoice) && 1 <= playerChoice && playerChoice <= 9) {
+                // logs.AppendText($"Your play: {message}\n");
+                txtBoxChoice.Text = "";
+                clientSocket.Send(Encoding.Default.GetBytes(message));
+                btnPlay.Enabled = false;
+                txtBoxChoice.Enabled = false;
+            }
+            else {
+                logs.AppendText("Please enter a number. (1-9)\n");
+            }
+        }
+        
+        //  --- UI Logic End ---
+        
+        //  --- Main Functions ---
+        
         // Receive messages from the server
         private void ReceiveMessages() {
             while (connected) {
                 try {
                     // Receive messages from the server
-                    Byte[] buffer = new Byte[64];
+                    Byte[] buffer = new Byte[128];
                     clientSocket.Receive(buffer);
                     string incomingMessage = Encoding.Default.GetString(buffer);
-                    string message = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
-                    // Start receiving game related messages
-                    if (!inGame && message.Equals("GAME_START")) {
-                        inGame = true;
-                        gameBoard.Invoke(new Action(() => gameBoard.Visible = true));
-                        txtBoxChoice.Enabled = true;
-                        btnPlay.Enabled = true;
-                        ClearBoard();
-                        logs.AppendText("The game has started!\n");
-                        continue;
-                    }
-                    if (inGame) {
-                        if (message.Equals("GAME_RESET")) {
-                            ClearBoard();
-                            txtBoxChoice.Enabled = false;
-                            btnPlay.Enabled = false;
-                            inGame = false;
-                            logs.AppendText("The game has been reset.\n");
-                            continue;
-                        }
-                        if (message.StartsWith("BOARD_ADD")) { // BOARD_ADD_X_1
+                    string serverMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
+                    string[] messages = serverMessage.Split('\n');
+                    for (int i = 0; i < messages.Length - 1; i++) {
+                        string message = messages[i];
+                        // logs.AppendText($"Incoming message: {message}\n");
+                        // Start receiving game related messages
+                        if (!inGame && (message.StartsWith("GAME_START") || message.StartsWith("GAME_RESUME"))) {
                             string[] splitMessage = message.Split('_');
-                            SetBoardText(int.Parse(splitMessage[2]), splitMessage[3]);
+                            string role = splitMessage[2];
+                            labelRole.Text = role;
+                            ClearBoard();
+                            if (role != "SPECTATOR")
+                            {
+                                if (role == "PLAYER1") {
+                                    btnPlay.Enabled = true;
+                                    txtBoxChoice.Enabled = true;
+                                }
+                                isActivePlayer = true;
+                            }
+                            inGame = true;
+                            // logs.AppendText(message.StartsWith("GAME_START") ? "The game has started!\n" : "Continuing the game...\n");
                             continue;
                         }
-                        if (message.StartsWith("GAME_END")) { // GAME_END_DRAW
-                            string[] splitMessage = message.Split(new char[] { '_' }, 3);
-                            string result = "DRAW" == splitMessage[2]
-                                ? "Game ended in a draw!"
-                                : $"{splitMessage[2]} wins!";
-                            logs.AppendText($"{result}\n");
-                            inGame = false;
-                            txtBoxChoice.Enabled = false;
-                            btnPlay.Enabled = false;
+                        // Get scoreboard information
+                        if (message.StartsWith("SCOREBOARD")) {
+                            string[] splitMessage = message.Split('/');
+                            txtBoxScores.AppendText(
+                                $"-> {splitMessage[1]} ({splitMessage[2]}/{splitMessage[3]}/{splitMessage[4]})\n");
                             continue;
                         }
+                        // Clear the scoreboard
+                        if (message.Equals("CLEAR_SCOREBOARD")) {
+                            txtBoxScores.Clear();
+                            continue;
+                        }
+                        if (inGame) {
+                            if (message.Equals("YOUR_TURN")) {
+                                txtBoxChoice.Enabled = true;
+                                btnPlay.Enabled = true;
+                                continue;
+                            }
+
+                            if (message.Equals("GAME_PAUSE")) {
+                                txtBoxChoice.Enabled = false;
+                                btnPlay.Enabled = false;
+                                inGame = false;
+                                labelRole.Text = "Waiting for game";
+                                logs.AppendText("The game has been paused.\n");
+                                continue;
+                            }
+
+                            if (message.Equals("GAME_RESET")) {
+                                ClearBoard();
+                                txtBoxChoice.Enabled = false;
+                                btnPlay.Enabled = false;
+                                inGame = false;
+                                labelRole.Text = "In Lobby";
+                                logs.AppendText("The game has been reset.\n");
+                                continue;
+                            }
+                            if (message.StartsWith("BOARD_B")) {
+                                // "BOARD_BX2OX5XO8X"
+                                string[] splitMessage = message.Split('_');
+                                ReceiveBoardState(splitMessage[1]);
+                                continue;
+                            }
+                            if (message.Contains("GAME_END")) {
+                                // GAME_END_DRAW
+                                string[] splitMessage = message.Split(new char[] { '_' }, 3);
+                                string result = "DRAW" == splitMessage[2]
+                                    ? "Game ended in a draw!"
+                                    : $"{splitMessage[2]} wins!";
+                                logs.AppendText($"{result}\n");
+                                labelRole.Text = "In Lobby";
+                                inGame = false;
+                                txtBoxChoice.Enabled = false;
+                                btnPlay.Enabled = false;
+                                continue;
+                            }
+                        }
+                        // Generic messages from the server
+                        logs.AppendText($"Server: {message}\n");
                     }
-                    // Generic messages from the server
-                    logs.AppendText($"Server: {message}\n");
                 }
                 // Handle exceptions
                 catch {
                     if (!terminating) {
                         logs.AppendText("Disconnected from the server.\n");
-                        gameBoard.Invoke(new Action(() => gameBoard.Visible = false));
+                        // gameBoard.Invoke(new Action(() => gameBoard.Visible = false));
+                        ClearBoard();
+                        inGame = false;
+                        boxUsername.Visible = false;
+                        gameBoard.Visible = false;
+                        boxScores.Visible = false;
+                        btnConnect.Text = "Connect";
                         btnConnect.Enabled = true;
                         txtBoxUsername.Enabled = true;
                         txtBoxIp.Enabled = true;
@@ -166,32 +259,22 @@ namespace tictactoe_network_client {
             }
         }
         
-        // Functions for manipulating the game board
-        private void SetBoardText(int boardNumber, string shape) {
-            Label board = Controls.Find($"board{boardNumber}", true).FirstOrDefault() as Label;
-            if (board != null) {
-                board.Text = shape;
+        //  --- Main Functions End ---
+        
+        //  --- Helper Functions ---
+        
+        private void ReceiveBoardState(string receivedBoard) {
+            for (int i = 1; i <= 9; i++) {
+                board[i].Text = receivedBoard[i].ToString();
             }
         }
 
         private void ClearBoard() {
             for (int i = 1; i <= 9; i++) {
-                Label board = Controls.Find($"board{i}", true).FirstOrDefault() as Label;
-                if (board != null) {
-                    board.Text = i.ToString();
-                }
+                board[i].Text = i.ToString();
             }
         }
         
-        // Send game choices to the server 
-        private void btnPlay_Click(object sender, EventArgs e) {
-            string message = txtBoxChoice.Text;
-            if (message != "" && message.Length <= 64) {
-                // logs.AppendText($"Your play: {message}\n");
-                txtBoxChoice.Text = "";
-                clientSocket.Send(Encoding.Default.GetBytes(message));
-            }
-        }
-        
+        //  --- Helper Functions End ---
     }
 }
