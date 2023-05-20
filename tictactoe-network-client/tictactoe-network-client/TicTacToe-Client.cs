@@ -153,8 +153,7 @@ namespace tictactoe_network_client {
                                 isActivePlayer = true;
                             }
                             inGame = true;
-                            logs.AppendText(message.StartsWith("GAME_START") ? 
-                                "The game has started!\n" : "Continuing the game...\n");
+                            // logs.AppendText(message.StartsWith("GAME_START") ? "The game has started!\n" : "Continuing the game...\n");
                             continue;
                         }
                         // Get scoreboard information
@@ -258,7 +257,7 @@ namespace tictactoe_network_client {
             string message = txtBoxChoice.Text;
             int playerChoice;
             if (Int32.TryParse(message, out playerChoice) && 1 <= playerChoice && playerChoice <= 9) {
-                logs.AppendText($"Your play: {message}\n");
+                // logs.AppendText($"Your play: {message}\n");
                 txtBoxChoice.Text = "";
                 clientSocket.Send(Encoding.Default.GetBytes(message));
                 btnPlay.Enabled = false;
