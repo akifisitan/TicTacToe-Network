@@ -22,7 +22,6 @@ namespace tictactoe_network_client {
         private bool terminating = false;
         private bool connected = false; 
         private bool inGame = false;
-        private bool isActivePlayer = false;
 
         //  --- UI Logic ---
 
@@ -42,8 +41,8 @@ namespace tictactoe_network_client {
         private void button_connect_Click(object sender, EventArgs e) {
             // Check if the username is suitable
             username = txtBoxUsername.Text.Trim();
-            if (username.Length < 4 || username.Length > 64) { 
-                logs.AppendText("Please make sure your username is between 4 and 64 characters.\n");
+            if (username.Length < 4 || username.Length > 16) { 
+                logs.AppendText("Please make sure your username length is between 4 and 16 characters.\n");
                 return;
             }
             // Disable the button while attempting to connect
@@ -162,16 +161,7 @@ namespace tictactoe_network_client {
                             string role = splitMessage[2];
                             labelRole.Text = role;
                             ClearBoard();
-                            if (role != "SPECTATOR")
-                            {
-                                if (role == "PLAYER1") {
-                                    btnPlay.Enabled = true;
-                                    txtBoxChoice.Enabled = true;
-                                }
-                                isActivePlayer = true;
-                            }
                             inGame = true;
-                            // logs.AppendText(message.StartsWith("GAME_START") ? "The game has started!\n" : "Continuing the game...\n");
                             continue;
                         }
                         // Get scoreboard information
@@ -198,7 +188,7 @@ namespace tictactoe_network_client {
                                 btnPlay.Enabled = false;
                                 inGame = false;
                                 labelRole.Text = "Waiting for game";
-                                logs.AppendText("The game has been paused.\n");
+                                logs.AppendText("Server: The game has been paused.\n");
                                 continue;
                             }
 
@@ -208,7 +198,7 @@ namespace tictactoe_network_client {
                                 btnPlay.Enabled = false;
                                 inGame = false;
                                 labelRole.Text = "In Lobby";
-                                logs.AppendText("The game has been reset.\n");
+                                logs.AppendText("Server: The game has been reset.\n");
                                 continue;
                             }
                             if (message.StartsWith("BOARD_B")) {
@@ -221,8 +211,8 @@ namespace tictactoe_network_client {
                                 // GAME_END_DRAW
                                 string[] splitMessage = message.Split(new char[] { '_' }, 3);
                                 string result = "DRAW" == splitMessage[2]
-                                    ? "Game ended in a draw!"
-                                    : $"{splitMessage[2]} wins!";
+                                    ? "Server: Game ended in a draw!"
+                                    : $"Server: {splitMessage[2]} wins!";
                                 logs.AppendText($"{result}\n");
                                 labelRole.Text = "In Lobby";
                                 inGame = false;
@@ -245,6 +235,7 @@ namespace tictactoe_network_client {
                         boxUsername.Visible = false;
                         gameBoard.Visible = false;
                         boxScores.Visible = false;
+                        txtBoxScores.Clear();
                         btnConnect.Text = "Connect";
                         btnConnect.Enabled = true;
                         txtBoxUsername.Enabled = true;

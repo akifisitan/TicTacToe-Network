@@ -15,9 +15,6 @@ namespace tictactoe_network_server {
         // Queue to store the waiting players
         private Queue<string> WaitList { get; }
         
-        // Set to store the players that left the current game
-        private HashSet<string> LeftGame { get; }
-        
         // True if the game is ongoing
         public bool IsActive { get; set; }
         
@@ -31,7 +28,6 @@ namespace tictactoe_network_server {
             Board = new List<Label>(10) { null };
             Players = new PlayerPair();
             WaitList = new Queue<string>();
-            LeftGame = new HashSet<string>();
             IsActive = false;
             IsAwaitingPlayer = false;
             TurnBeforePause = 0;
@@ -91,8 +87,9 @@ namespace tictactoe_network_server {
                 Players.Player2.HasTurn = !Players.Player1.HasTurn;
                 resumeStatus = 2;
             }
+            // Error, should not happen
             else {
-                throw new Exception("Game has no missing players.");
+                resumeStatus = -1;
             }
             return resumeStatus;
         }
@@ -102,7 +99,6 @@ namespace tictactoe_network_server {
             IsAwaitingPlayer = false;
             Players.Clear();
             WaitList.Clear();
-            LeftGame.Clear();
             ResetGameBoard();
         }
         
@@ -111,7 +107,6 @@ namespace tictactoe_network_server {
             IsAwaitingPlayer = false;
             Players.Clear();
             WaitList.Clear();
-            LeftGame.Clear();
         }
 
         // Function which maps the board state as a string and returns it
@@ -125,23 +120,11 @@ namespace tictactoe_network_server {
         }
 
         public string PickNewPlayerFromWaitList() {
-            if (WaitList.Count == 0) return "";
-            string newPlayerUsername = WaitList.Dequeue();
-            while (LeftGame.Contains(newPlayerUsername)) {
-                if (WaitList.Count > 0)
-                    newPlayerUsername = WaitList.Dequeue();
-                else
-                    return "";
-            }
-            return newPlayerUsername;
+            return WaitList.Count == 0 ? "" : WaitList.Dequeue();
         }
         
         public void AddToWaitList(string username) {
             WaitList.Enqueue(username);
-        }
-
-        public void AddToLeftGameList(string username) {
-            LeftGame.Add(username);
         }
         
         // Function to modify board UI, returns false if the board is full 
@@ -168,17 +151,13 @@ namespace tictactoe_network_server {
         }
 
         // Function to check if the board is full, returns true if the board is full
-        public bool BoardIsFull()
-        {
-            for (int i = 1; i <= 9; i++)
-            {
+        public bool BoardIsFull() {
+            for (int i = 1; i <= 9; i++) {
                 if (Board[i].Text == i.ToString()) return false;
             } 
-
             return true;
         }
         
-
         // Function to reset the game board to a clean state
         private void ResetGameBoard() {
             for (int i = 1; i <= 9; i++) {

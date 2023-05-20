@@ -83,7 +83,7 @@
             this.txtBoxPort.Name = "txtBoxPort";
             this.txtBoxPort.Size = new System.Drawing.Size(148, 26);
             this.txtBoxPort.TabIndex = 2;
-            this.txtBoxPort.Text = "80";
+            this.txtBoxPort.Text = "5050";
             // 
             // logs
             // 
@@ -93,7 +93,7 @@
             this.logs.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.logs.Name = "logs";
             this.logs.ReadOnly = true;
-            this.logs.Size = new System.Drawing.Size(353, 273);
+            this.logs.Size = new System.Drawing.Size(353, 369);
             this.logs.TabIndex = 3;
             this.logs.TabStop = false;
             this.logs.Text = "";
@@ -104,7 +104,7 @@
             this.txtBoxPlayers.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtBoxPlayers.Name = "txtBoxPlayers";
             this.txtBoxPlayers.ReadOnly = true;
-            this.txtBoxPlayers.Size = new System.Drawing.Size(124, 222);
+            this.txtBoxPlayers.Size = new System.Drawing.Size(129, 310);
             this.txtBoxPlayers.TabIndex = 7;
             this.txtBoxPlayers.TabStop = false;
             this.txtBoxPlayers.Text = "";
@@ -112,7 +112,7 @@
             // btnStartGame
             // 
             this.btnStartGame.Enabled = false;
-            this.btnStartGame.Location = new System.Drawing.Point(636, 375);
+            this.btnStartGame.Location = new System.Drawing.Point(636, 463);
             this.btnStartGame.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnStartGame.Name = "btnStartGame";
             this.btnStartGame.Size = new System.Drawing.Size(141, 55);
@@ -227,7 +227,7 @@
             this.gameBoard.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.gameBoard.Name = "gameBoard";
             this.gameBoard.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.gameBoard.Size = new System.Drawing.Size(237, 315);
+            this.gameBoard.Size = new System.Drawing.Size(237, 403);
             this.gameBoard.TabIndex = 29;
             this.gameBoard.TabStop = false;
             this.gameBoard.Text = "Game Board";
@@ -236,18 +236,19 @@
             // txtTurn
             // 
             this.txtTurn.Font = new System.Drawing.Font("Microsoft Sans Serif", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtTurn.Location = new System.Drawing.Point(41, 224);
+            this.txtTurn.Location = new System.Drawing.Point(22, 219);
             this.txtTurn.Name = "txtTurn";
-            this.txtTurn.Size = new System.Drawing.Size(157, 47);
+            this.txtTurn.Size = new System.Drawing.Size(198, 47);
             this.txtTurn.TabIndex = 29;
             this.txtTurn.Text = "X\'s turn.";
+            this.txtTurn.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.logs);
             this.groupBox1.Location = new System.Drawing.Point(11, 115);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(376, 315);
+            this.groupBox1.Size = new System.Drawing.Size(376, 403);
             this.groupBox1.TabIndex = 30;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Logs";
@@ -257,7 +258,7 @@
             this.groupBox2.Controls.Add(this.txtBoxPlayers);
             this.groupBox2.Location = new System.Drawing.Point(636, 115);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(141, 255);
+            this.groupBox2.Size = new System.Drawing.Size(141, 343);
             this.groupBox2.TabIndex = 31;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Players";
@@ -267,7 +268,7 @@
             this.groupBox3.Controls.Add(this.txtBoxScores);
             this.groupBox3.Location = new System.Drawing.Point(795, 115);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(257, 314);
+            this.groupBox3.Size = new System.Drawing.Size(257, 403);
             this.groupBox3.TabIndex = 32;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Scores (W/L/D)";
@@ -277,7 +278,7 @@
             this.txtBoxScores.Location = new System.Drawing.Point(12, 28);
             this.txtBoxScores.Name = "txtBoxScores";
             this.txtBoxScores.ReadOnly = true;
-            this.txtBoxScores.Size = new System.Drawing.Size(239, 272);
+            this.txtBoxScores.Size = new System.Drawing.Size(239, 369);
             this.txtBoxScores.TabIndex = 0;
             this.txtBoxScores.TabStop = false;
             this.txtBoxScores.Text = "";
@@ -287,7 +288,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(1086, 444);
+            this.ClientSize = new System.Drawing.Size(1086, 535);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
