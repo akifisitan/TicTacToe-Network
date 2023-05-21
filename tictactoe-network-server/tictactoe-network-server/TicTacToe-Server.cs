@@ -58,7 +58,6 @@ namespace tictactoe_network_server {
                 Thread acceptThread = new Thread(AcceptConnections);
                 acceptThread.Start();
                 logs.AppendText($"Started listening on port: {serverPort}\n");
-                debugLogs.AppendText("Started listening.\n");
             } else {
                 logs.AppendText("Please check the port number!\n");
             }
@@ -76,7 +75,6 @@ namespace tictactoe_network_server {
             }
             // Fill up the game board (Will only be done once)
             if (game.Board.Count < 9) {
-                game.Log = debugLogs;
                 for (int i = 1; i <= 9; i++) {
                     Label board = Controls.Find($"board{i}", true).FirstOrDefault() as Label;
                     if (board != null) { game.Board.Add(board); }
@@ -247,11 +245,6 @@ namespace tictactoe_network_server {
                         else if (game.IsAwaitingPlayer && game.IsPlayer(leavingPlayer)) {
                             game.RemovePlayer(leavingPlayer);
                         }
-                        else
-                        {
-                            // either this or game.RemoveFromWaitList
-                        }
-
                         // Release resources
                         user.Socket.Close();
                         user = null;

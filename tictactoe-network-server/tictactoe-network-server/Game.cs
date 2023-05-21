@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
+﻿using System.Collections.Generic;
 using System.Text;
 using System.Windows.Forms;
 
@@ -25,24 +23,6 @@ namespace tictactoe_network_server {
         // Stores player which had the turn before a game pause (0: None, 1: Player1, 2: Player2)
         public int TurnBeforePause { get; set; }
         
-        // For Debug logging
-        public RichTextBox Log { get; set; }
-        
-        // Debugging
-        private void PrintPlayers() {
-            string p1 = null != Players.Player1 ? Players.Player1.Username : "null";
-            string p2 = null != Players.Player2 ? Players.Player2.Username : "null";
-            Log.AppendText($"{p1}\n{p2}\n");
-        }
-
-        private void PrintWaitList() {
-            StringBuilder sb = new StringBuilder();
-            foreach (string s in WaitList) {
-                sb.Append($"{s}\n");
-            }
-            Log.AppendText(sb.ToString());
-        }
-
         public Game() {
             Board = new List<Label>(10) { null };
             Players = new PlayerPair();
@@ -66,20 +46,15 @@ namespace tictactoe_network_server {
         }
 
         public void RemovePlayer(string username) {
-            Log.AppendText("Players before RemovePlayer():\n");
-            PrintPlayers();
             if (Players.Player1 != null && username == Players.Player1.Username) {
                 Players.Player1 = null;
             }
             else if (Players.Player2 != null && username == Players.Player2.Username) {
                 Players.Player2 = null;
             }
-            Log.AppendText("Players after RemovePlayer():\n");
-            PrintPlayers();
         }
         
         public void StartGame(Player player1, Player player2) {
-            Log.AppendText("StartGame() called.\n");
             Players.Player1 = player1;
             Players.Player2 = player2;
             Players.Player1.Shape = "X";
@@ -124,7 +99,6 @@ namespace tictactoe_network_server {
         }
 
         public void ResetGame() {
-            Log.AppendText("ResetGame() called.\n");
             IsActive = false;
             IsAwaitingPlayer = false;
             Players.Clear();
@@ -133,7 +107,6 @@ namespace tictactoe_network_server {
         }
         
         public void EndGame() {
-            Log.AppendText("EndGame() called.\n");
             IsActive = false;
             IsAwaitingPlayer = false;
             Players.Clear();
@@ -152,22 +125,15 @@ namespace tictactoe_network_server {
         }
 
         public string PickNewPlayerFromWaitList() {
-            Log.AppendText("WaitList before function call:\n");
-            PrintWaitList();
             if (WaitList.Count == 0) {
-                Log.AppendText("The queue is empty!\n");
                 return "";
             }
             string nextUsernameInQueue = WaitList.Dequeue();
-            Log.AppendText($"Next username in the queue: {nextUsernameInQueue}\n");
-            Log.AppendText("WaitList after function call:\n");
-            PrintWaitList();
             return nextUsernameInQueue;
         }
         
         public void AddToWaitList(string username) {
             WaitList.Enqueue(username);
-            Log.AppendText($"Added {username} to WaitList.\n");
         }
 
         // Function to modify board UI, returns false if the board is full 

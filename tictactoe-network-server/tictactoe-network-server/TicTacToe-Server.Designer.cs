@@ -50,7 +50,6 @@
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.txtBoxScores = new System.Windows.Forms.RichTextBox();
-            this.debugLogs = new System.Windows.Forms.RichTextBox();
             this.gameBoard.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -284,26 +283,12 @@
             this.txtBoxScores.TabStop = false;
             this.txtBoxScores.Text = "";
             // 
-            // debugLogs
-            // 
-            this.debugLogs.HideSelection = false;
-            this.debugLogs.ImeMode = System.Windows.Forms.ImeMode.Off;
-            this.debugLogs.Location = new System.Drawing.Point(1058, 143);
-            this.debugLogs.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.debugLogs.Name = "debugLogs";
-            this.debugLogs.ReadOnly = true;
-            this.debugLogs.Size = new System.Drawing.Size(346, 375);
-            this.debugLogs.TabIndex = 33;
-            this.debugLogs.TabStop = false;
-            this.debugLogs.Text = "";
-            // 
             // MainWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.Control;
-            this.ClientSize = new System.Drawing.Size(1416, 535);
-            this.Controls.Add(this.debugLogs);
+            this.ClientSize = new System.Drawing.Size(1063, 535);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
@@ -323,8 +308,6 @@
             this.ResumeLayout(false);
             this.PerformLayout();
         }
-
-        private System.Windows.Forms.RichTextBox debugLogs;
 
         private System.Windows.Forms.RichTextBox txtBoxScores;
 
