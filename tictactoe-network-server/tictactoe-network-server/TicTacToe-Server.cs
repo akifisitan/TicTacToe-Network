@@ -120,7 +120,11 @@ namespace tictactoe_network_server {
                             game.AddToWaitList(username);
                             SendMessage(user, "GAME_START_SPECTATOR\n");
                             SendMessage(user, $"BOARD_{game.BoardToString()}\n");
-                            SendMessage(user, "Joined the ongoing game.\n");
+                            SendMessage(user, "You are spectating the ongoing game.\n");
+                            foreach (Player player in scores.Values) {
+                                SendMessage(user, $"SCOREBOARD/{player.Username}/{player.Wins}/" +
+                                                  $"{player.Losses}/{player.Draws}\n");
+                            }
                         }
                         else if (game.IsAwaitingPlayer) {
                             game.AddToWaitList(username);
@@ -223,30 +227,30 @@ namespace tictactoe_network_server {
                 }
                 // Happens when a client disconnects
                 catch {
-                    string leavingPlayer = user.Username;
-                    if (!terminating) {
+                    try {
+                        string leavingPlayer = user.Username;
                         logs.AppendText($"{leavingPlayer} left the room.\n");
+                        connected = false;
+                        connectedClients.Remove(leavingPlayer);
+                        NotifyClients($"{leavingPlayer} left the room.\n");
+                        RefreshPlayerList();
+                        // If an active player leaves the game
+                        if (game.IsActive && game.IsPlayer(leavingPlayer)) {
+                            PauseGame();
+                            logs.AppendText($"Looking for a replacement for {leavingPlayer}.\n");
+                            game.RemovePlayer(leavingPlayer);
+                            ResumeGame();
+                        }
+                        // If the game is waiting for a player to continue and an active player leaves the game
+                        else if (game.IsAwaitingPlayer && game.IsPlayer(leavingPlayer)) {
+                            game.RemovePlayer(leavingPlayer);
+                        }
+                        // Release resources
+                        user.Socket.Close();
+                        user = null;
+                    } catch (Exception e) {
+                        logs.AppendText($"Error occurred after a player left: {e}\n");
                     }
-                    connected = false;
-                    connectedClients.Remove(leavingPlayer);
-                    NotifyClients($"{leavingPlayer} left the room.\n");
-                    RefreshPlayerList();
-                    // If an active player leaves the game
-                    if (game.IsActive && game.IsPlayer(leavingPlayer)) {
-                        PauseGame();
-                        logs.AppendText($"Looking for possible replacements for {leavingPlayer}...\n");
-                        game.RemovePlayer(leavingPlayer);
-                        game.AddToLeftGameList(leavingPlayer);
-                        ResumeGame();
-                    }
-                    // If the game is waiting for a player to continue and an active player leaves the game
-                    else if (game.IsAwaitingPlayer && game.IsPlayer(leavingPlayer)) {
-                        game.RemovePlayer(leavingPlayer);
-                        game.AddToLeftGameList(leavingPlayer);
-                    }
-                    // Release resources
-                    user.Socket.Close();
-                    user = null;
                 }
             }
         }
@@ -307,7 +311,11 @@ namespace tictactoe_network_server {
 
         // Send a message to one of the ongoing game's players
         private void NotifyPlayer(Player player, string message) {
-            SendMessage((User) connectedClients[player.Username], message);
+            try {
+                SendMessage((User)connectedClients[player.Username], message);
+            } catch (Exception e) {
+                logs.AppendText($"Error messaging player: {e}\n");
+            }
         }
         
         // Send the scoreboard state to every user as "SCOREBOARD/username/wins/losses/draws" for each player
@@ -340,7 +348,7 @@ namespace tictactoe_network_server {
                 scores[p2Username] : new Player(p2Username);
             // Start the game
             game.StartGame(player1, player2);
-            logs.AppendText("Game has started!\n");
+            logs.AppendText("The game has started.\n");
             logs.AppendText($"{player1.Username}'s ({player1.Shape}) turn.\n");
             // Notify everyone that the game started
             NotifySpectators("GAME_START_SPECTATOR\n");
@@ -365,13 +373,15 @@ namespace tictactoe_network_server {
         
         // Attempts to resume the paused game
         private bool ResumeGame() {
+            // Pick a new player from the queue, discarding players that have left the game
             string newPlayerUsername = game.PickNewPlayerFromWaitList();
-            // DEBUG logs.AppendText($"Chose {newPlayerUsername} as user.\n");
-            // No new player could be picked
-            if (newPlayerUsername == "") {
-                logs.AppendText("The game will resume when an eligible user joins.\n");
-                NotifyClients("The game will resume when an eligible user joins.\n");
-                return false;
+            while (!connectedClients.Contains(newPlayerUsername)) {
+                if (newPlayerUsername == "") {
+                    logs.AppendText("The game will resume as soon as a new player joins.\n");
+                    NotifyClients("The game will resume as soon as a new player joins.\n");
+                    return false;
+                }
+                newPlayerUsername = game.PickNewPlayerFromWaitList();
             }
             Player newPlayer = scores.ContainsKey(newPlayerUsername) ?
                 scores[newPlayerUsername] : new Player(newPlayerUsername);
@@ -381,16 +391,23 @@ namespace tictactoe_network_server {
                 NotifyClients("Still missing a player.\n");
                 return false;
             }
+            if (resumeStatus == -1) {
+                logs.AppendText("Game is not missing any players, this should not happen.\n");
+                return false;
+            }
+            int newPlayerNumber = game.DeterminePlayerNumber(newPlayer.Username);
             game.IsAwaitingPlayer = false;
             game.IsActive = true;
             NotifySpectators("GAME_RESUME_SPECTATOR\n");
             NotifyPlayer(game.Players.Player1, "GAME_RESUME_PLAYER1\n");
             NotifyPlayer(game.Players.Player2, "GAME_RESUME_PLAYER2\n");
-            NotifyPlayer(game.TurnBeforePause == 1 ? game.Players.Player1 : game.Players.Player2, 
-                "YOUR_TURN\n");
+            Player nextPlayer = game.TurnBeforePause == 1 ? game.Players.Player1 : game.Players.Player2;
+            NotifyPlayer(nextPlayer, "YOUR_TURN\n");
             NotifyClients($"BOARD_{game.BoardToString()}\n");
-            logs.AppendText($"Resuming the game with {newPlayerUsername} as the new player.\n");
-            NotifyClients($"Resuming the game with {newPlayerUsername} as the new player.\n");
+            logs.AppendText($"Resuming the game with {newPlayerUsername} as Player{newPlayerNumber}.\n");
+            NotifyClients($"Resuming the game with {newPlayerUsername} as Player{newPlayerNumber}.\n");
+            logs.AppendText($"{nextPlayer.Username}'s ({nextPlayer.Shape}) turn.\n");
+            NotifyClients($"{nextPlayer.Username}'s ({nextPlayer.Shape}) turn.\n");
             return true;
         }
 

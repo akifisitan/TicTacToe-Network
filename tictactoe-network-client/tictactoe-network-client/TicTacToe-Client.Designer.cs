@@ -78,7 +78,7 @@
             this.txtBoxPort.Name = "txtBoxPort";
             this.txtBoxPort.Size = new System.Drawing.Size(130, 26);
             this.txtBoxPort.TabIndex = 4;
-            this.txtBoxPort.Text = "80";
+            this.txtBoxPort.Text = "5050";
             // 
             // label1
             // 
@@ -163,7 +163,7 @@
             this.txtBoxUsername.Name = "txtBoxUsername";
             this.txtBoxUsername.Size = new System.Drawing.Size(130, 26);
             this.txtBoxUsername.TabIndex = 5;
-            this.txtBoxUsername.Text = "test";
+            this.txtBoxUsername.Text = "test1";
             // 
             // board3
             // 
@@ -303,7 +303,7 @@
             this.boxLogs.Size = new System.Drawing.Size(352, 301);
             this.boxLogs.TabIndex = 39;
             this.boxLogs.TabStop = false;
-            this.boxLogs.Text = "Game Logs";
+            this.boxLogs.Text = "Messages";
             // 
             // labelUsername
             // 
@@ -312,7 +312,7 @@
             this.labelUsername.Name = "labelUsername";
             this.labelUsername.Size = new System.Drawing.Size(300, 60);
             this.labelUsername.TabIndex = 40;
-            this.labelUsername.Text = "SuperLongUsernameWow";
+            this.labelUsername.Text = "ABCDEFGH12345678";
             this.labelUsername.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // labelRole
