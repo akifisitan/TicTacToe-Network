@@ -303,7 +303,7 @@
             this.boxLogs.Size = new System.Drawing.Size(352, 301);
             this.boxLogs.TabIndex = 39;
             this.boxLogs.TabStop = false;
-            this.boxLogs.Text = "Game Logs";
+            this.boxLogs.Text = "Messages";
             // 
             // labelUsername
             // 

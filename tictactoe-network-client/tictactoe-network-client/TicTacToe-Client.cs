@@ -80,11 +80,11 @@ namespace tictactoe_network_client {
                 string serverResponse = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
                 // Close the socket if the username is not available or the server is full
                 if (serverResponse.Equals("USERNAME_NOT_AVAILABLE")) {
-                    logs.AppendText("There is already a player with this username!\n");
+                    logs.AppendText("Cannot join the server as this username is taken.\n");
                     clientSocket.Close();
                 }
                 else if (serverResponse.Equals("SERVER_IS_FULL")) {
-                    logs.AppendText("The server is at maximum capacity!\n");
+                    logs.AppendText("Cannot join the server as it is at maximum capacity.\n");
                     clientSocket.Close();
                 }
                 // Positive response, update the UI
@@ -127,7 +127,7 @@ namespace tictactoe_network_client {
             string message = txtBoxChoice.Text;
             int playerChoice;
             if (Int32.TryParse(message, out playerChoice) && 1 <= playerChoice && playerChoice <= 9) {
-                // logs.AppendText($"Your play: {message}\n");
+                // DEBUG logs.AppendText($"{username}: {message}\n");
                 txtBoxChoice.Text = "";
                 clientSocket.Send(Encoding.Default.GetBytes(message));
                 btnPlay.Enabled = false;
@@ -154,7 +154,7 @@ namespace tictactoe_network_client {
                     string[] messages = serverMessage.Split('\n');
                     for (int i = 0; i < messages.Length - 1; i++) {
                         string message = messages[i];
-                        // logs.AppendText($"Incoming message: {message}\n");
+                        // DEBUG logs.AppendText($"Incoming message: {message}\n");
                         // Start receiving game related messages
                         if (!inGame && (message.StartsWith("GAME_START") || message.StartsWith("GAME_RESUME"))) {
                             string[] splitMessage = message.Split('_');
@@ -204,7 +204,7 @@ namespace tictactoe_network_client {
                             if (message.StartsWith("BOARD_B")) {
                                 // "BOARD_BX2OX5XO8X"
                                 string[] splitMessage = message.Split('_');
-                                ReceiveBoardState(splitMessage[1]);
+                                SetBoardState(splitMessage[1]);
                                 continue;
                             }
                             if (message.Contains("GAME_END")) {
@@ -229,7 +229,6 @@ namespace tictactoe_network_client {
                 catch {
                     if (!terminating) {
                         logs.AppendText("Disconnected from the server.\n");
-                        // gameBoard.Invoke(new Action(() => gameBoard.Visible = false));
                         ClearBoard();
                         inGame = false;
                         boxUsername.Visible = false;
@@ -254,7 +253,7 @@ namespace tictactoe_network_client {
         
         //  --- Helper Functions ---
         
-        private void ReceiveBoardState(string receivedBoard) {
+        private void SetBoardState(string receivedBoard) {
             for (int i = 1; i <= 9; i++) {
                 board[i].Text = receivedBoard[i].ToString();
             }
