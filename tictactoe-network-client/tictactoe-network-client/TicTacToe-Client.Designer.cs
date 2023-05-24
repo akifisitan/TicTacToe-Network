@@ -69,7 +69,6 @@
             this.txtBoxIp.Name = "txtBoxIp";
             this.txtBoxIp.Size = new System.Drawing.Size(130, 26);
             this.txtBoxIp.TabIndex = 3;
-            this.txtBoxIp.Text = "127.0.0.1";
             // 
             // txtBoxPort
             // 
@@ -78,7 +77,6 @@
             this.txtBoxPort.Name = "txtBoxPort";
             this.txtBoxPort.Size = new System.Drawing.Size(130, 26);
             this.txtBoxPort.TabIndex = 4;
-            this.txtBoxPort.Text = "5050";
             // 
             // label1
             // 
@@ -163,7 +161,6 @@
             this.txtBoxUsername.Name = "txtBoxUsername";
             this.txtBoxUsername.Size = new System.Drawing.Size(130, 26);
             this.txtBoxUsername.TabIndex = 5;
-            this.txtBoxUsername.Text = "test1";
             // 
             // board3
             // 

@@ -386,16 +386,18 @@ namespace tictactoe_network_server {
             Player newPlayer = scores.ContainsKey(newPlayerUsername) ?
                 scores[newPlayerUsername] : new Player(newPlayerUsername);
             int resumeStatus = game.ResumeGame(newPlayer);
+            int newPlayerNumber = game.DeterminePlayerNumber(newPlayer.Username);
             if (resumeStatus == 0) {
-                logs.AppendText("Still missing a player.\n");
-                NotifyClients("Still missing a player.\n");
+                logs.AppendText($"Set {newPlayerUsername} as Player{newPlayerNumber}.\n");
+                NotifyClients($"Set {newPlayerUsername} as Player{newPlayerNumber}.\n");
+                logs.AppendText("The game is still missing a player.\n");
+                NotifyClients("The game is still missing a player.\n");
                 return false;
             }
             if (resumeStatus == -1) {
-                logs.AppendText("Game is not missing any players, this should not happen.\n");
+                logs.AppendText("An error occurred in the game, please reset it.\n");
                 return false;
             }
-            int newPlayerNumber = game.DeterminePlayerNumber(newPlayer.Username);
             game.IsAwaitingPlayer = false;
             game.IsActive = true;
             NotifySpectators("GAME_RESUME_SPECTATOR\n");
