@@ -41,7 +41,7 @@ namespace tictactoe_network_client {
         private void button_connect_Click(object sender, EventArgs e) {
             // Check if the username is suitable
             username = txtBoxUsername.Text.Trim();
-            if (username.Length < 4 || username.Length > 16) { 
+            if (username.Length < 4 || username.Length > 16) {
                 logs.AppendText("Please make sure your username length is between 4 and 16 characters.\n");
                 return;
             }
@@ -243,6 +243,7 @@ namespace tictactoe_network_client {
                         txtBoxChoice.Enabled = false;
                         btnPlay.Enabled = false;
                     }
+                    inGame = false;
                     clientSocket.Close();
                     connected = false;
                 }
