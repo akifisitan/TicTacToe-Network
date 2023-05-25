@@ -116,7 +116,6 @@ namespace tictactoe_network_server {
         // Function which maps the board state as a string and returns it
         // Example: "BX2OX5XO8X"
         public string BoardToString() {
-            // Log.AppendText("BoardToString() called.\n");
             StringBuilder sb = new StringBuilder("B");
             for (int i = 1; i <= 9; i++) {
                 sb.Append(Board[i].Text);
@@ -125,11 +124,7 @@ namespace tictactoe_network_server {
         }
 
         public string PickNewPlayerFromWaitList() {
-            if (WaitList.Count == 0) {
-                return "";
-            }
-            string nextUsernameInQueue = WaitList.Dequeue();
-            return nextUsernameInQueue;
+            return WaitList.Count == 0 ? "" : WaitList.Dequeue();
         }
         
         public void AddToWaitList(string username) {

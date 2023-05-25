@@ -19,7 +19,6 @@ namespace tictactoe_network_client {
         private string username = "";
 
         // Control flow variables
-        private bool terminating = false;
         private bool connected = false; 
         private bool inGame = false;
 
@@ -33,7 +32,6 @@ namespace tictactoe_network_client {
         
         private void MainWindow_FormClosing(object sender, System.ComponentModel.CancelEventArgs e) {
             connected = false;
-            terminating = true;
             Environment.Exit(0);
         }
 
@@ -75,9 +73,8 @@ namespace tictactoe_network_client {
                 clientSocket.Send(Encoding.Default.GetBytes(username));
                 // Receive response from the server
                 Byte[] buffer = new Byte[64];
-                clientSocket.Receive(buffer);
-                string incomingMessage = Encoding.Default.GetString(buffer);
-                string serverResponse = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
+                int bytesRead = clientSocket.Receive(buffer);
+                string serverResponse = Encoding.Default.GetString(buffer, 0, bytesRead).Trim('\0');
                 // Close the socket if the username is not available or the server is full
                 if (serverResponse.Equals("USERNAME_NOT_AVAILABLE")) {
                     logs.AppendText("Cannot join the server as this username is taken.\n");
@@ -147,11 +144,11 @@ namespace tictactoe_network_client {
             while (connected) {
                 try {
                     // Receive messages from the server
-                    Byte[] buffer = new Byte[128];
-                    clientSocket.Receive(buffer);
-                    string incomingMessage = Encoding.Default.GetString(buffer);
-                    string serverMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
-                    string[] messages = serverMessage.Split('\n');
+                    Byte[] buffer = new Byte[256];
+                    int bytesRead = clientSocket.Receive(buffer);
+                    string incomingMessage = Encoding.Default.GetString(buffer, 0, bytesRead).Trim('\0');
+                    // logs.AppendText($"---------\nIncoming message: {incomingMessage}\n---------\n");
+                    string[] messages = incomingMessage.Split('\n');
                     for (int i = 0; i < messages.Length - 1; i++) {
                         string message = messages[i];
                         // DEBUG logs.AppendText($"Incoming message: {message}\n");
@@ -165,7 +162,7 @@ namespace tictactoe_network_client {
                             continue;
                         }
                         // Get scoreboard information
-                        if (message.StartsWith("SCOREBOARD")) {
+                        if (message.StartsWith("SB_ENTRY")) {
                             string[] splitMessage = message.Split('/');
                             txtBoxScores.AppendText(
                                 $"-> {splitMessage[1]} ({splitMessage[2]}/{splitMessage[3]}/{splitMessage[4]})\n");
@@ -226,23 +223,22 @@ namespace tictactoe_network_client {
                     }
                 }
                 // Handle exceptions
-                catch {
-                    if (!terminating) {
-                        logs.AppendText("Disconnected from the server.\n");
-                        ClearBoard();
-                        inGame = false;
-                        boxUsername.Visible = false;
-                        gameBoard.Visible = false;
-                        boxScores.Visible = false;
-                        txtBoxScores.Clear();
-                        btnConnect.Text = "Connect";
-                        btnConnect.Enabled = true;
-                        txtBoxUsername.Enabled = true;
-                        txtBoxIp.Enabled = true;
-                        txtBoxPort.Enabled = true;
-                        txtBoxChoice.Enabled = false;
-                        btnPlay.Enabled = false;
-                    }
+                catch (Exception e) {
+                    // logs.AppendText($"Exception occurred: {e}\n");
+                    logs.AppendText("Disconnected from the server.\n");
+                    ClearBoard();
+                    inGame = false;
+                    boxUsername.Visible = false;
+                    gameBoard.Visible = false;
+                    boxScores.Visible = false;
+                    txtBoxScores.Clear();
+                    btnConnect.Text = "Connect";
+                    btnConnect.Enabled = true;
+                    txtBoxUsername.Enabled = true;
+                    txtBoxIp.Enabled = true;
+                    txtBoxPort.Enabled = true;
+                    txtBoxChoice.Enabled = false;
+                    btnPlay.Enabled = false;
                     inGame = false;
                     clientSocket.Close();
                     connected = false;
