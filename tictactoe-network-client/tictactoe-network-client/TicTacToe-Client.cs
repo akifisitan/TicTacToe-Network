@@ -39,8 +39,15 @@ namespace tictactoe_network_client {
         private void button_connect_Click(object sender, EventArgs e) {
             // Check if the username is suitable
             username = txtBoxUsername.Text.Trim();
-            if (username.Length < 4 || username.Length > 16) {
-                logs.AppendText("Please make sure your username length is between 4 and 16 characters.\n");
+            if (username.Length < 4 || username.Length > 12) {
+                logs.AppendText("Please make sure your username length is between 4 and 12 characters.\n");
+                return;
+            }
+            if (!CheckUsername()) {
+                logs.AppendText("Please make sure your username only consists of:\n" +
+                                "- Uppercase (A-Z)\n" +
+                                "- Lowercase (a-z)\n" +
+                                "- Digits (0-9)\n");
                 return;
             }
             // Disable the button while attempting to connect
@@ -60,7 +67,7 @@ namespace tictactoe_network_client {
             string ip = txtBoxIp.Text;
             int portNum;
             if (!Int32.TryParse(txtBoxPort.Text, out portNum)) {
-                logs.AppendText("Check the port.\n");
+                logs.AppendText("Please enter a valid port number.\n");
                 btnConnect.Enabled = true;
                 return;
             }
@@ -76,18 +83,19 @@ namespace tictactoe_network_client {
                 int bytesRead = clientSocket.Receive(buffer);
                 string serverResponse = Encoding.Default.GetString(buffer, 0, bytesRead).Trim('\0');
                 // Close the socket if the username is not available or the server is full
-                if (serverResponse.Equals("USERNAME_NOT_AVAILABLE")) {
-                    logs.AppendText("Cannot join the server as this username is taken.\n");
+                if (serverResponse.Equals("SERVER_IS_FULL")) {
+                    logs.AppendText("Server: The server is at maximum capacity.\n");
                     clientSocket.Close();
                 }
-                else if (serverResponse.Equals("SERVER_IS_FULL")) {
-                    logs.AppendText("Cannot join the server as it is at maximum capacity.\n");
+                else if (serverResponse.Equals("USERNAME_NOT_AVAILABLE")) {
+                    logs.AppendText("Server: This username is not available.\n");
                     clientSocket.Close();
                 }
                 // Positive response, update the UI
                 else {
                     connected = true;
                     logs.AppendText($"Connected to the server as {username}.\n");
+                    logs.AppendText($"Server: Welcome to the game, {username}!\n");
                     txtBoxUsername.Enabled = false;
                     txtBoxIp.Enabled = false;
                     txtBoxPort.Enabled = false;
@@ -114,7 +122,7 @@ namespace tictactoe_network_client {
             }
             // Handle exceptions
             catch {
-                logs.AppendText("Could not connect to the server!\n");
+                logs.AppendText("Could not connect to the server.\n");
             }
             btnConnect.Enabled = true;
         }
@@ -122,16 +130,16 @@ namespace tictactoe_network_client {
         // Send game choices to the server 
         private void btnPlay_Click(object sender, EventArgs e) {
             string message = txtBoxChoice.Text;
+            txtBoxChoice.Clear();
             int playerChoice;
             if (Int32.TryParse(message, out playerChoice) && 1 <= playerChoice && playerChoice <= 9) {
                 // DEBUG logs.AppendText($"{username}: {message}\n");
-                txtBoxChoice.Text = "";
                 clientSocket.Send(Encoding.Default.GetBytes(message));
                 btnPlay.Enabled = false;
                 txtBoxChoice.Enabled = false;
             }
             else {
-                logs.AppendText("Please enter a number. (1-9)\n");
+                logs.AppendText("Please make a valid move. (1-9)\n");
             }
         }
         
@@ -179,7 +187,6 @@ namespace tictactoe_network_client {
                                 btnPlay.Enabled = true;
                                 continue;
                             }
-
                             if (message.Equals("GAME_PAUSE")) {
                                 txtBoxChoice.Enabled = false;
                                 btnPlay.Enabled = false;
@@ -188,7 +195,6 @@ namespace tictactoe_network_client {
                                 logs.AppendText("Server: The game has been paused.\n");
                                 continue;
                             }
-
                             if (message.Equals("GAME_RESET")) {
                                 ClearBoard();
                                 txtBoxChoice.Enabled = false;
@@ -223,7 +229,7 @@ namespace tictactoe_network_client {
                     }
                 }
                 // Handle exceptions
-                catch (Exception e) {
+                catch {
                     // logs.AppendText($"Exception occurred: {e}\n");
                     logs.AppendText("Disconnected from the server.\n");
                     ClearBoard();
@@ -260,6 +266,15 @@ namespace tictactoe_network_client {
             for (int i = 1; i <= 9; i++) {
                 board[i].Text = i.ToString();
             }
+        }
+
+        private bool CheckUsername() {
+            foreach (char c in username) {
+                if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && (c < '0' || c > '9')) {
+                    return false;
+                }
+            }
+            return true;
         }
         
         //  --- Helper Functions End ---

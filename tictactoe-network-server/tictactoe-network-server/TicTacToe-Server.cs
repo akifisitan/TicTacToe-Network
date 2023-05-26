@@ -46,11 +46,16 @@ namespace tictactoe_network_server {
         // Start button logic
         private void btnStart_Click(object sender, EventArgs e) {
             int serverPort;
-            // Check if the port number is a valid integer and start the server if it is
+            // Check if the port number is a valid integer and if it is in the safe ports range 
             if (Int32.TryParse(txtBoxPort.Text, out serverPort)) {
+                if (49152 > serverPort || serverPort > 65535) {
+                    logs.AppendText("Please make sure the port number is in the 49152-65535 range.\n");
+                    return;
+                }
+                // Start the server
                 IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, serverPort);
                 serverSocket.Bind(endPoint);
-                serverSocket.Listen(10);
+                serverSocket.Listen(8);
                 listening = true; 
                 btnListen.Enabled = false;
                 txtBoxPort.Enabled = false; 
@@ -60,7 +65,7 @@ namespace tictactoe_network_server {
                 acceptThread.Start();
                 logs.AppendText($"Started listening on port: {serverPort}\n");
             } else {
-                logs.AppendText("Please check the port number!\n");
+                logs.AppendText("Please enter a valid port number.\n");
             }
         }
         
@@ -232,7 +237,7 @@ namespace tictactoe_network_server {
                     txtTurn.Text = $"{nextPlayer.Shape}'s Turn";
                 }
                 // Client disconnection logic
-                catch (Exception e) {
+                catch {
                     // logs.AppendText($"Exception occurred: {e}\n");
                     connected = false;
                     try {
