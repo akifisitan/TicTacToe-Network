@@ -8,6 +8,8 @@ CS408 - Computer Networks Course Project
 - [Installation](#installation)
 - [Usage](#usage)
 
+![TicTacToe-Network Demo](https://github.com/akifisitan/TicTacToe-Network/blob/main/tictactoe.png)
+
 ## Introduction
 
 - This is a project created for the CS408 Computer Networks course at Sabanci University.
